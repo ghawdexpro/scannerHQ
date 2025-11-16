@@ -1,65 +1,238 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Sun, MapPin, Calculator, Clock, Shield, Zap } from 'lucide-react'
+import AddressInput from '@/components/address-input/AddressInput'
+import { MALTA_CONFIG, APP_CONFIG } from '@/config/constants'
 
 export default function Home() {
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  const handleAddressSelect = (address: string, coordinates: { lat: number; lng: number }) => {
+    setIsAnalyzing(true)
+    // Navigate to analyze page
+    window.location.href = `/analyze?lat=${coordinates.lat}&lng=${coordinates.lng}&address=${encodeURIComponent(address)}`
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Hero Section */}
+      <section className="relative">
+        <div className="container mx-auto px-4 py-16 md:py-24">
+          <div className="text-center max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                Solar Power for Malta & Gozo
+                <span className="text-blue-600"> in 30 Seconds</span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-8">
+                Get instant solar analysis, government grant calculations, and a professional quote within 3 hours.
+                Powered by AI and Google Solar technology.
+              </p>
+            </motion.div>
+
+            {/* Address Input Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-xl p-8 mb-8"
             >
-              Learning
-            </a>{" "}
-            center.
+              <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+                Start Your Solar Journey
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Enter your property address to get an instant solar potential analysis
+              </p>
+              <AddressInput
+                onAddressSelect={handleAddressSelect}
+                isLoading={isAnalyzing}
+              />
+              <p className="text-sm text-gray-500 mt-4">
+                100% Free • No commitment • Results in seconds
+              </p>
+            </motion.div>
+
+            {/* Key Benefits */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="grid grid-cols-2 md:grid-cols-3 gap-4 text-left"
+            >
+              <div className="bg-white rounded-lg p-4 shadow-md">
+                <div className="flex items-center mb-2">
+                  <Calculator className="w-5 h-5 text-blue-600 mr-2" />
+                  <span className="font-semibold">Grant Calculator</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Up to €{MALTA_CONFIG.MAX_GRANT_AMOUNT} government grant
+                </p>
+              </div>
+              <div className="bg-white rounded-lg p-4 shadow-md">
+                <div className="flex items-center mb-2">
+                  <Clock className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="font-semibold">3-Hour Quote</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Professional quote guaranteed
+                </p>
+              </div>
+              <div className="bg-white rounded-lg p-4 shadow-md">
+                <div className="flex items-center mb-2">
+                  <Zap className="w-5 h-5 text-yellow-600 mr-2" />
+                  <span className="font-semibold">Feed-in Tariff</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {MALTA_CONFIG.TARIFF_GUARANTEE_YEARS} years guaranteed rates
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Why Choose Ghawdex Engineering?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sun className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">AI-Powered Analysis</h3>
+              <p className="text-gray-600">
+                Advanced AI technology analyzes your roof from satellite imagery,
+                even in areas where Google Solar isn't available like Gozo.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">100% Malta Coverage</h3>
+              <p className="text-gray-600">
+                Complete coverage of Malta and Gozo with specialized local knowledge
+                and understanding of Malta's unique solar conditions.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">20-Year Guarantee</h3>
+              <p className="text-gray-600">
+                Government-backed feed-in tariffs for 20 years with professional
+                installation and comprehensive warranty coverage.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ROI Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 md:p-12 text-white">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-3xl font-bold mb-4">
+                  Compare Your Options
+                </h2>
+                <p className="mb-6">
+                  See the difference between installing with and without the government grant
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></span>
+                    <strong>With Grant:</strong> {MALTA_CONFIG.GRANT_TARIFF}€/kWh for 20 years
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></span>
+                    <strong>Without Grant:</strong> {MALTA_CONFIG.NO_GRANT_TARIFF}€/kWh for 20 years
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></span>
+                    Average ROI: 6-8 years
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
+                <h3 className="text-xl font-semibold mb-4">Average Maltese Home</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>System Size:</span>
+                    <strong>5 kW</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Annual Generation:</span>
+                    <strong>7,800 kWh</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>20-Year Savings:</span>
+                    <strong>€15,000+</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>CO₂ Offset:</span>
+                    <strong>3.2 tons/year</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Go Solar?
+          </h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Join hundreds of families in Malta & Gozo saving with solar energy
+          </p>
+          <button
+            onClick={() => document.getElementById('address-input')?.focus()}
+            className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Get Your Free Analysis Now
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p className="mb-2">© 2024 Ghawdex Engineering. All rights reserved.</p>
+          <p className="text-gray-400">
+            Malta's premier AI-based solar and smart energy solutions provider
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
     </div>
-  );
+  )
 }
