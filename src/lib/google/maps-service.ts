@@ -1,16 +1,28 @@
-import { Loader } from '@googlemaps/js-api-loader'
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
 
-// Initialize the Google Maps JavaScript API loader
-const loader = new Loader({
-  apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-  version: 'weekly',
-  libraries: ['places', 'drawing', 'geometry', 'visualization']
-})
+// Cache for loaded libraries
+const libraryCache: { [key: string]: any } = {}
+let isConfigured = false
 
-// Load Google Maps API
+// Configure Google Maps (only on client side)
+const configureGoogleMaps = () => {
+  if (!isConfigured && typeof window !== 'undefined') {
+    setOptions({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+      version: 'weekly',
+      libraries: ['places', 'drawing', 'geometry', 'visualization']
+    })
+    isConfigured = true
+  }
+}
+
+// Load Google Maps core library
 export const loadGoogleMaps = async () => {
   try {
-    await loader.load()
+    configureGoogleMaps()
+    if (!libraryCache.core) {
+      libraryCache.core = await importLibrary('core')
+    }
     return window.google
   } catch (error) {
     console.error('Error loading Google Maps:', error)
@@ -18,13 +30,27 @@ export const loadGoogleMaps = async () => {
   }
 }
 
+// Load specific Google Maps library
+export const loadLibrary = async (name: string) => {
+  try {
+    configureGoogleMaps()
+    if (!libraryCache[name]) {
+      libraryCache[name] = await importLibrary(name)
+    }
+    return libraryCache[name]
+  } catch (error) {
+    console.error(`Error loading Google Maps ${name} library:`, error)
+    throw new Error(`Failed to load Google Maps ${name} library`)
+  }
+}
+
 // Geocode an address to get coordinates
 export const geocodeAddress = async (address: string) => {
-  const google = await loadGoogleMaps()
-  const geocoder = new google.maps.Geocoder()
+  const geocodingLib = await loadLibrary('geocoding')
+  const geocoder = new geocodingLib.Geocoder()
 
   return new Promise<google.maps.GeocoderResult>((resolve, reject) => {
-    geocoder.geocode({ address }, (results, status) => {
+    geocoder.geocode({ address }, (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
       if (status === 'OK' && results && results[0]) {
         resolve(results[0])
       } else {
@@ -43,7 +69,11 @@ export const validateMaltaAddress = async (address: string): Promise<{
 }> => {
   try {
     const result = await geocodeAddress(address)
-    const { lat, lng } = result.geometry.location
+    const location = result.geometry.location
+
+    // Get lat/lng values
+    const lat = typeof location.lat === 'function' ? location.lat() : location.lat
+    const lng = typeof location.lng === 'function' ? location.lng() : location.lng
 
     // Check if address is in Malta (including Gozo)
     const countryComponent = result.address_components.find(
@@ -55,12 +85,12 @@ export const validateMaltaAddress = async (address: string): Promise<{
     }
 
     // Check if it's Gozo (rough coordinates for Gozo region)
-    const isGozo = lat() > 36.0 && lat() < 36.1 && lng() > 14.2 && lng() < 14.35
+    const isGozo = lat > 36.0 && lat < 36.1 && lng > 14.2 && lng < 14.35
 
     return {
       isValid: true,
       isGozo,
-      coordinates: { lat: lat(), lng: lng() },
+      coordinates: { lat, lng },
       formattedAddress: result.formatted_address
     }
   } catch (error) {
@@ -105,9 +135,9 @@ export const initializeAutocomplete = async (
   inputElement: HTMLInputElement,
   options: google.maps.places.AutocompleteOptions = {}
 ) => {
-  const google = await loadGoogleMaps()
+  const placesLib = await loadLibrary('places') as google.maps.PlacesLibrary
 
-  const autocomplete = new google.maps.places.Autocomplete(inputElement, {
+  const autocomplete = new placesLib.Autocomplete(inputElement, {
     componentRestrictions: { country: 'mt' }, // Restrict to Malta
     fields: ['address_components', 'geometry', 'formatted_address'],
     types: ['address'],
@@ -122,18 +152,22 @@ export const calculateDistance = async (
   point1: { lat: number; lng: number },
   point2: { lat: number; lng: number }
 ) => {
-  const google = await loadGoogleMaps()
-  const p1 = new google.maps.LatLng(point1.lat, point1.lng)
-  const p2 = new google.maps.LatLng(point2.lat, point2.lng)
+  const [mapsLib, geometryLib] = await Promise.all([
+    loadLibrary('maps'),
+    loadLibrary('geometry')
+  ])
 
-  return google.maps.geometry.spherical.computeDistanceBetween(p1, p2)
+  const p1 = new mapsLib.LatLng(point1.lat, point1.lng)
+  const p2 = new mapsLib.LatLng(point2.lat, point2.lng)
+
+  return geometryLib.spherical.computeDistanceBetween(p1, p2)
 }
 
 // Get bounds for Malta
 export const getMaltaBounds = async () => {
-  const google = await loadGoogleMaps()
-  return new google.maps.LatLngBounds(
-    new google.maps.LatLng(35.8, 14.1), // Southwest
-    new google.maps.LatLng(36.1, 14.6)  // Northeast
+  const mapsLib = await loadLibrary('maps')
+  return new mapsLib.LatLngBounds(
+    new mapsLib.LatLng(35.8, 14.1), // Southwest
+    new mapsLib.LatLng(36.1, 14.6)  // Northeast
   )
 }
