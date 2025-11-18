@@ -6,18 +6,19 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 export const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey)
 
-// Phone auth functions
-export async function signUpWithPhone(phone: string) {
+// Email auth functions
+export async function signUpWithEmail(email: string) {
   try {
     const { data, error } = await supabaseAuth.auth.signInWithOtp({
-      phone,
+      email,
       options: {
-        shouldCreateUser: true
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/auth/verify`
       }
     })
 
     if (error) {
-      console.error('[AUTH] Phone signup error:', error)
+      console.error('[AUTH] Email signup error:', error)
       throw error
     }
 
@@ -28,12 +29,12 @@ export async function signUpWithPhone(phone: string) {
   }
 }
 
-export async function verifyOtp(phone: string, token: string) {
+export async function verifyOtp(email: string, token: string) {
   try {
     const { data, error } = await supabaseAuth.auth.verifyOtp({
-      phone,
+      email,
       token,
-      type: 'sms'
+      type: 'email'
     })
 
     if (error) {

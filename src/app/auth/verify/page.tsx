@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 function VerifyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const phone = searchParams.get('phone')
+  const email = searchParams.get('email')
 
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -32,12 +32,12 @@ function VerifyContent() {
     return () => clearInterval(timer)
   }, [timeLeft])
 
-  if (!phone) {
+  if (!email) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Request</h1>
-          <p className="text-gray-600 mb-6">Please go back and enter your phone number.</p>
+          <p className="text-gray-600 mb-6">Please go back and enter your email address.</p>
           <Link
             href="/auth/login"
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors"
@@ -68,9 +68,9 @@ function VerifyContent() {
         return
       }
 
-      console.log('[VERIFY] Verifying OTP with phone:', phone)
+      console.log('[VERIFY] Verifying OTP with email:', email)
 
-      const result = await verifyOtp(phone, code)
+      const result = await verifyOtp(email, code)
 
       if (result.success) {
         console.log('[VERIFY] OTP verified successfully')
@@ -108,11 +108,11 @@ function VerifyContent() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Code</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Email</h1>
             <p className="text-gray-600">
               We sent a 6-digit code to
               <br />
-              <span className="font-semibold">{phone}</span>
+              <span className="font-semibold">{email}</span>
             </p>
           </div>
 
@@ -159,7 +159,7 @@ function VerifyContent() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-mono text-3xl tracking-widest text-center focus:border-blue-500 focus:outline-none transition-colors disabled:bg-gray-100"
               />
               <p className="text-xs text-gray-600 mt-2">
-                Check your SMS messages for the code
+                Check your email inbox for the verification code
               </p>
             </div>
 
@@ -208,7 +208,7 @@ function VerifyContent() {
           {/* Help Links */}
           <div className="mt-6 flex gap-4 text-sm justify-center">
             <Link href="/auth/login" className="text-blue-600 hover:underline">
-              ← Change Phone Number
+              ← Change Email Address
             </Link>
           </div>
         </div>
@@ -223,7 +223,7 @@ function VerifyContent() {
           <p className="font-semibold mb-2">Didn't get the code?</p>
           <ul className="space-y-1 text-xs">
             <li>✓ Check your spam/junk folder</li>
-            <li>✓ Make sure your number is correct</li>
+            <li>✓ Make sure your email is correct</li>
             <li>✓ Wait a moment and try again</li>
           </ul>
         </motion.div>
