@@ -26,17 +26,32 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
-  // Handle fullscreen transitions - ensure map resizes properly
+  // Handle fullscreen transitions and orientation changes
   useEffect(() => {
     if (map && isFullscreen) {
       // Trigger resize on next tick to let DOM settle
       const timer = setTimeout(() => {
         // Trigger resize event to ensure map adjusts to new container size
         google.maps.event.trigger(map, 'resize')
-        // Don't recenter - let user's first click handle positioning
-      }, 0)
+      }, 100)
 
-      return () => clearTimeout(timer)
+      // Handle orientation change in fullscreen mode
+      const handleOrientationChange = () => {
+        setTimeout(() => {
+          if (map && isFullscreen) {
+            google.maps.event.trigger(map, 'resize')
+          }
+        }, 100)
+      }
+
+      window.addEventListener('orientationchange', handleOrientationChange)
+      window.addEventListener('resize', handleOrientationChange)
+
+      return () => {
+        clearTimeout(timer)
+        window.removeEventListener('orientationchange', handleOrientationChange)
+        window.removeEventListener('resize', handleOrientationChange)
+      }
     }
   }, [isFullscreen, map])
 
@@ -306,29 +321,29 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
 
         {/* Location Permission Prompt */}
         {showLocationPrompt && !isInitializing && map && (
-          <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center z-20">
-            <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl">
-              <MapPin className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center z-20 p-4">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl">
+              <MapPin className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 Find Your Property
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-sm sm:text-base text-gray-600 mb-6">
                 We can use your current location to help you get started, or you can manually select your property on the map.
               </p>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <button
                   onClick={() => requestUserLocation(map)}
                   disabled={isGettingLocation}
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-blue-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-full text-sm sm:text-base font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2 min-h-12"
                 >
                   {isGettingLocation ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                       Detecting Location...
                     </>
                   ) : (
                     <>
-                      <MapPin className="w-5 h-5" />
+                      <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                       Use My Current Location
                     </>
                   )}
@@ -338,7 +353,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
                     setShowLocationPrompt(false)
                     setIsFullscreen(true)
                   }}
-                  className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors"
+                  className="w-full bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 sm:py-4 rounded-full text-sm sm:text-base font-semibold hover:bg-gray-200 transition-colors min-h-12"
                 >
                   Select Manually on Map
                 </button>
@@ -350,57 +365,59 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
         {/* Map */}
         <div
           ref={mapRef}
-          className={`w-full overflow-hidden ${isFullscreen ? 'h-screen rounded-none' : 'h-[600px] rounded-2xl shadow-xl'}`}
+          className={`w-full overflow-hidden ${isFullscreen ? 'h-screen rounded-none' : 'h-64 sm:h-80 md:h-[600px] rounded-2xl shadow-lg md:shadow-xl'}`}
         />
       </div>
 
       {/* Selected Location Panel */}
       {selectedLocation && (
-        <div className={`bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100 ${isFullscreen ? 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-2xl w-full mx-4' : 'mt-6'}`}>
-          <div className="flex items-start gap-4">
+        <div className={`bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-2 border-blue-100 ${isFullscreen ? 'fixed bottom-4 sm:bottom-6 left-4 sm:left-1/2 sm:-translate-x-1/2 right-4 sm:max-w-2xl z-50' : 'mt-4 sm:mt-6'}`}>
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
             <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <MapPin className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-500 uppercase mb-1">
                 Selected Location
               </h3>
-              <p className="text-lg font-medium text-gray-900 mb-1">
+              <p className="text-base sm:text-lg font-medium text-gray-900 mb-1 break-words">
                 {selectedLocation.address}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500 break-all">
                 {selectedLocation.coordinates.lat.toFixed(6)}, {selectedLocation.coordinates.lng.toFixed(6)}
               </p>
             </div>
             <button
               onClick={handleConfirm}
               disabled={isProcessing}
-              className="flex-shrink-0 bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              className="flex-shrink-0 w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-6 py-3 rounded-full text-sm sm:text-base font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-12"
             >
               {isProcessing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  {isLoading ? 'Analyzing...' : 'Validating...'}
+                  <span className="hidden sm:inline">{isLoading ? 'Analyzing...' : 'Validating...'}</span>
+                  <span className="sm:hidden">{isLoading ? 'Analyzing' : 'Validating'}</span>
                 </>
               ) : (
                 <>
-                  Confirm & Analyze
+                  <span className="hidden sm:inline">Confirm & Analyze</span>
+                  <span className="sm:hidden">Confirm</span>
                 </>
               )}
             </button>
           </div>
 
           {/* Controls */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-gray-600">
-                📍 Location Selected - Drag marker to adjust
+          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-xs sm:text-sm text-gray-600">
+                📍 Drag marker to adjust location
               </p>
               <div className="flex gap-2">
                 {isFullscreen && (
                   <button
                     onClick={() => setIsFullscreen(false)}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-full text-sm font-semibold hover:bg-gray-700 transition-colors"
+                    className="px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-full text-xs sm:text-sm font-semibold hover:bg-gray-700 transition-colors min-h-10"
                   >
                     Exit Fullscreen
                   </button>
@@ -413,9 +430,9 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
 
       {/* Helper Text - When No Location Selected */}
       {!selectedLocation && !isInitializing && !showLocationPrompt && (
-        <div className="mt-4 text-center text-sm text-gray-500">
-          <p>Click anywhere on the satellite map to select your property location</p>
-          <p className="mt-1">💡 Tip: Use the zoom controls (+/-) and drag to navigate to your exact property</p>
+        <div className="mt-4 text-center text-xs sm:text-sm text-gray-500 px-4">
+          <p>Click on the satellite map to select your property</p>
+          <p className="mt-1 text-xs">💡 Zoom in closer to select exact property</p>
         </div>
       )}
     </div>

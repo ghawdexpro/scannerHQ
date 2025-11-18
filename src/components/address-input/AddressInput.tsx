@@ -108,42 +108,47 @@ export default function AddressInput({ onAddressSelect, isLoading = false }: Add
   const isProcessing = isLoading || isValidating
 
   return (
-    <form onSubmit={handleManualSubmit} className="w-full max-w-2xl mx-auto address-input-wrapper">
+    <form onSubmit={handleManualSubmit} className="w-full max-w-2xl mx-auto address-input-wrapper px-4">
       <div id="address-input-container" className="relative" style={{ overflow: 'visible' }}>
-        <div className="relative" style={{ overflow: 'visible' }}>
-          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
-          <input
-            ref={inputRef}
-            id="address-input"
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Enter your property address in Malta or Gozo..."
-            className="w-full pl-12 pr-32 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-blue-500 focus:outline-none transition-colors"
-            disabled={isProcessing}
-            autoComplete="off"
-          />
+        <div className="relative flex flex-col sm:flex-row gap-3" style={{ overflow: 'visible' }}>
+          <div className="relative flex-1" style={{ overflow: 'visible' }}>
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none z-10" />
+            <input
+              ref={inputRef}
+              id="address-input"
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Enter property address..."
+              className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 text-sm sm:text-base border-2 border-gray-200 rounded-full focus:border-blue-500 focus:outline-none transition-colors min-h-12"
+              disabled={isProcessing}
+              autoComplete="off"
+              inputMode="search"
+              aria-label="Property address input"
+            />
+          </div>
           <button
             type="submit"
             disabled={isProcessing || !inputValue.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 z-10"
+            className="bg-blue-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-full text-sm sm:text-base font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-12 sm:min-w-max flex-shrink-0"
           >
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {isLoading ? 'Analyzing...' : 'Validating...'}
+                <span className="hidden sm:inline">{isLoading ? 'Analyzing...' : 'Validating...'}</span>
+                <span className="sm:hidden">{isLoading ? 'Analyzing' : 'Validating'}</span>
               </>
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                Analyze
+                <span className="hidden sm:inline">Analyze</span>
               </>
             )}
           </button>
         </div>
 
         {/* Helper text */}
-        <div className="mt-2 text-sm text-gray-500">
+        <div className="mt-2 text-xs sm:text-sm text-gray-500">
           <p>Examples: "Triq il-Kbira, Mosta" or "Pjazza San Ġorġ, Victoria, Gozo"</p>
         </div>
       </div>
