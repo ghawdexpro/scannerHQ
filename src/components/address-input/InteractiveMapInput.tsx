@@ -45,13 +45,10 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           lng: position.coords.longitude
         }
 
-        // Center map on user location and zoom in with smooth animation
-        mapInstance.panTo(userLocation)
-
-        // Smoothly zoom in to the location
-        setTimeout(() => {
-          mapInstance.setZoom(21) // Closer zoom for precise confirmation (same as 3D view)
-        }, 500)
+        // Center map on user location immediately and zoom in
+        // Use setCenter instead of panTo for immediate, precise positioning
+        mapInstance.setCenter(userLocation)
+        mapInstance.setZoom(21) // Closer zoom for precise confirmation
 
         // Reverse geocode to get address
         try {
@@ -61,16 +58,25 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           geocoder.geocode({ location: userLocation }, async (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
             if (status === 'OK' && results && results[0]) {
               const address = results[0].formatted_address
-              await validateAndSetLocation(address, userLocation, mapInstance)
-              toast.success('Location detected! Please confirm your exact property.')
+              try {
+                await validateAndSetLocation(address, userLocation, mapInstance)
+                toast.success('Location detected! Please confirm your exact property.')
+              } catch (error) {
+                console.error('Validation error:', error)
+                toast.error('Error validating location. Please try selecting manually.')
+              }
+            } else {
+              toast.error('Could not find address for your location. Please select manually on the map.')
             }
+            setIsGettingLocation(false)
+            setShowLocationPrompt(false)
           })
         } catch (error) {
           console.error('Geocoding error:', error)
+          toast.error('Error finding your address. Please select manually on the map.')
+          setIsGettingLocation(false)
+          setShowLocationPrompt(false)
         }
-
-        setIsGettingLocation(false)
-        setShowLocationPrompt(false)
       },
       (error) => {
         console.error('Geolocation error:', error)
