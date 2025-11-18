@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Loader2, MapPin } from 'lucide-react'
 import { loadLibrary, validateMaltaAddress } from '@/lib/google/maps-service'
+import { geocodeCache } from '@/lib/cache/geocode-cache'
 import { ERROR_MESSAGES } from '@/config/constants'
 import toast from 'react-hot-toast'
 
@@ -178,8 +179,8 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   }, [])
 
 
-  // Handle map click
-  const handleMapClick = async (latLng: google.maps.LatLng, mapInstance: google.maps.Map) => {
+  // Handle map click with memoization
+  const handleMapClick = useCallback(async (latLng: google.maps.LatLng, mapInstance: google.maps.Map) => {
     const lat = latLng.lat()
     const lng = latLng.lng()
 
@@ -210,6 +211,8 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       geocoder.geocode({ location: latLng }, async (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
         if (status === 'OK' && results && results[0]) {
           const address = results[0].formatted_address
+          // Cache the geocoding result for 30 minutes
+          geocodeCache.set(address, { lat, lng })
           await validateAndSetLocation(address, { lat, lng }, mapInstance)
         } else {
           toast.error('Could not find address for this location', { duration: 2000 })
@@ -221,10 +224,10 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       toast.error('Error finding address. Please try again.', { duration: 2000 })
       setIsValidating(false)
     }
-  }
+  }, [])
 
-  // Validate and set location
-  const validateAndSetLocation = async (
+  // Validate and set location with memoization
+  const validateAndSetLocation = useCallback(async (
     address: string,
     coordinates: { lat: number; lng: number },
     mapInstance: google.maps.Map
@@ -265,7 +268,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       toast.error('Error validating location. Please try again.', { duration: 2000 })
       setIsValidating(false)
     }
-  }
+  }, [])
 
   // Update marker on map - ensures only ONE marker exists at a time
   const updateMarker = (coordinates: { lat: number; lng: number }, mapInstance: google.maps.Map) => {

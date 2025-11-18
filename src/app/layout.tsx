@@ -4,6 +4,8 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { SEO_CONFIG } from '@/config/constants'
 import { AuthProvider } from '@/context/AuthContext'
+import InstallPrompt from '@/components/InstallPrompt'
+import PWAInitializer from '@/components/PWAInitializer'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -71,9 +73,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans antialiased">
+        <PWAInitializer />
         <AuthProvider>
           {children}
         </AuthProvider>
+        <InstallPrompt />
         <Toaster
           position="bottom-center"
           toastOptions={{
