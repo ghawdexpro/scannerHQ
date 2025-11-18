@@ -29,17 +29,12 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   // Handle fullscreen transitions - ensure map resizes properly
   useEffect(() => {
     if (map && isFullscreen) {
-      // Small delay to let DOM settle after fullscreen transition
+      // Trigger resize on next tick to let DOM settle
       const timer = setTimeout(() => {
         // Trigger resize event to ensure map adjusts to new container size
         google.maps.event.trigger(map, 'resize')
-
-        // Maintain the current center (don't let it recenter to bounds)
-        const currentCenter = map.getCenter()
-        if (currentCenter) {
-          map.setCenter(currentCenter)
-        }
-      }, 100)
+        // Don't recenter - let user's first click handle positioning
+      }, 0)
 
       return () => clearTimeout(timer)
     }
