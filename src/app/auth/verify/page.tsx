@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CheckCircle, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import { verifyOtp } from '@/lib/auth/client'
 import Link from 'next/link'
 
-export default function VerifyPage() {
+// Force dynamic rendering for useSearchParams
+export const dynamic = 'force-dynamic'
+
+function VerifyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const phone = searchParams.get('phone')
@@ -226,5 +229,13 @@ export default function VerifyPage() {
         </motion.div>
       </motion.div>
     </div>
+  )
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyContent />
+    </Suspense>
   )
 }

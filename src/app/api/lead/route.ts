@@ -9,11 +9,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-export async function POST(request: NextRequest): Promise<NextResponse<LeadResponse | LeadErrorResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse<LeadResponse | LeadErrorResponse | any>> {
   try {
     // Apply general rate limiting
     const rateLimitResponse = rateLimit(request)
-    if (rateLimitResponse) return rateLimitResponse as NextResponse
+    if (rateLimitResponse) return rateLimitResponse
 
     // Parse request body
     let body: unknown
