@@ -24,67 +24,6 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   const [showLocationPrompt, setShowLocationPrompt] = useState(true)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isRotating, setIsRotating] = useState(false)
-  const animationFrameRef = useRef<number | null>(null)
-
-  // Start 3D rotation animation around the building
-  const start3DRotation = (mapInstance: google.maps.Map, center: { lat: number; lng: number }) => {
-    setIsRotating(true)
-
-    // Switch to hybrid for better 3D building visibility
-    mapInstance.setMapTypeId('hybrid')
-
-    // Log for debugging
-    console.log('Starting 3D rotation at:', center)
-    console.log('Current map type:', mapInstance.getMapTypeId())
-
-    // Use moveCamera for better 3D support
-    let heading = 0
-
-    // First move to 3D view
-    mapInstance.moveCamera({
-      center: center,
-      zoom: 20, // Zoom level that supports 3D buildings
-      tilt: 67.5,
-      heading: 0
-    })
-
-    console.log('Moved camera to 3D view - tilt:', mapInstance.getTilt(), 'heading:', mapInstance.getHeading())
-
-    // Then start rotation after map settles
-    const rotate = () => {
-      heading = (heading + 1) % 360 // Rotate 1 degree per frame for smoother animation
-
-      mapInstance.moveCamera({
-        center: center,
-        zoom: 20,
-        tilt: 67.5,
-        heading: heading
-      })
-
-      animationFrameRef.current = requestAnimationFrame(rotate)
-    }
-
-    // Wait for map to settle into 3D mode
-    setTimeout(rotate, 1000)
-  }
-
-  // Stop 3D rotation animation
-  const stop3DRotation = (mapInstance?: google.maps.Map) => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-      animationFrameRef.current = null
-    }
-
-    // Reset to top-down view if map instance provided
-    if (mapInstance) {
-      mapInstance.setTilt(0)
-      mapInstance.setHeading(0)
-      mapInstance.setMapTypeId('satellite')
-    }
-
-    setIsRotating(false)
-  }
 
   // Request user's location
   const requestUserLocation = async (mapInstance: google.maps.Map) => {
@@ -121,8 +60,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           geocoder.geocode({ location: userLocation }, async (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
             if (status === 'OK' && results && results[0]) {
               const address = results[0].formatted_address
-              // Don't start 3D animation yet - just set location and ask for confirmation
-              await validateAndSetLocation(address, userLocation, mapInstance, false)
+              await validateAndSetLocation(address, userLocation, mapInstance)
               toast.success('Location detected! Please confirm your exact property.')
             }
           })
@@ -156,7 +94,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
         // Malta center coordinates
         const maltaCenter = { lat: 35.9, lng: 14.4 }
 
-        // Create map with satellite/hybrid view and 3D support
+        // Create map with satellite view
         const mapInstance = new google.maps.Map(mapRef.current, {
           center: maltaCenter,
           zoom: 11,
@@ -166,10 +104,6 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           fullscreenControl: true,
           zoomControl: true,
           gestureHandling: 'greedy',
-          tilt: 0,
-          heading: 0,
-          rotateControl: true,
-          // Additional 3D support options
           isFractionalZoomEnabled: true,
           restriction: {
             latLngBounds: {
@@ -181,11 +115,6 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
             strictBounds: false
           }
         })
-
-        // Log map capabilities
-        console.log('Map initialized with 3D support')
-        console.log('Tilt enabled:', mapInstance.getTilt())
-        console.log('Heading enabled:', mapInstance.getHeading())
 
         // Log to console for debugging
         console.log('Google Maps initialized:', mapInstance)
@@ -212,14 +141,6 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
     initializeMap()
   }, [])
 
-  // Cleanup animation on unmount
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-  }, [])
 
   // Handle map click
   const handleMapClick = async (latLng: google.maps.LatLng, mapInstance: google.maps.Map) => {
@@ -253,8 +174,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   const validateAndSetLocation = async (
     address: string,
     coordinates: { lat: number; lng: number },
-    mapInstance: google.maps.Map,
-    autoStart3D: boolean = true // Only start 3D animation if explicitly requested
+    mapInstance: google.maps.Map
   ) => {
     setIsValidating(true)
 
@@ -278,13 +198,16 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
         coordinates: validCoords
       })
 
+      // Center map on the selected location
+      mapInstance.panTo(validCoords)
+
+      // Zoom in to the location
+      setTimeout(() => {
+        mapInstance.setZoom(21)
+      }, 300)
+
       // Update or create marker
       updateMarker(validCoords, mapInstance)
-
-      // Only start 3D rotation animation if autoStart3D is true
-      if (autoStart3D) {
-        start3DRotation(mapInstance, validCoords)
-      }
 
       setIsValidating(false)
     } catch (error) {
@@ -433,42 +356,12 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-gray-600">
-                {isRotating ? '🎬 3D View Active' : '📍 Location Selected - Drag marker to adjust'}
+                📍 Location Selected - Drag marker to adjust
               </p>
               <div className="flex gap-2">
-                {!isRotating && isFullscreen && (
-                  <button
-                    onClick={() => {
-                      if (map && selectedLocation) {
-                        start3DRotation(map, selectedLocation.coordinates)
-                        toast.success('Starting 3D view of your property!')
-                      }
-                    }}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full text-sm font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg"
-                  >
-                    ✨ View in 3D
-                  </button>
-                )}
-                {isRotating && isFullscreen && (
-                  <button
-                    onClick={() => {
-                      if (map) {
-                        stop3DRotation(map)
-                      }
-                    }}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-semibold hover:bg-purple-700 transition-colors"
-                  >
-                    Stop Rotation
-                  </button>
-                )}
                 {isFullscreen && (
                   <button
-                    onClick={() => {
-                      setIsFullscreen(false)
-                      if (map) {
-                        stop3DRotation(map)
-                      }
-                    }}
+                    onClick={() => setIsFullscreen(false)}
                     className="px-4 py-2 bg-gray-600 text-white rounded-full text-sm font-semibold hover:bg-gray-700 transition-colors"
                   >
                     Exit Fullscreen

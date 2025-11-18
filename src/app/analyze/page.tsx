@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Loader2, MapPin, Sun, Zap, Calculator, TrendingUp, Home, DollarSign } from 'lucide-react'
 import Link from 'next/link'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic'
@@ -18,6 +18,13 @@ const MALTA_CONFIG = {
   YEARS: 20
 }
 
+// Pricing configuration
+const PRICING_CONFIG = {
+  ORIGINAL_PRICE_PER_KWP: 500, // €500 per kWp (original price)
+  PRICE_PER_KWP: 350, // €350 per kWp (Black Friday discount)
+  FIXED_COST: 1500 // €1,500 for documents and installation
+}
+
 // Calculate annual production for a given system size
 const calculateAnnualProduction = (systemSizeKW: number): number => {
   return systemSizeKW * MALTA_CONFIG.KWH_PER_KW_YEAR
@@ -26,6 +33,11 @@ const calculateAnnualProduction = (systemSizeKW: number): number => {
 // Calculate yearly income from production
 const calculateYearlyIncome = (productionKWh: number): number => {
   return productionKWh * MALTA_CONFIG.FEED_IN_TARIFF
+}
+
+// Calculate total system cost
+const calculateSystemCost = (systemSizeKW: number): number => {
+  return (systemSizeKW * PRICING_CONFIG.PRICE_PER_KWP) + PRICING_CONFIG.FIXED_COST
 }
 
 // Calculate 20-year income projection with degradation
@@ -67,14 +79,18 @@ function AnalyzeContent() {
   const minSystemData = useMemo(() => calculate20YearIncome(minSystemSize), [minSystemSize])
   const optimalSystemData = useMemo(() => calculate20YearIncome(optimalSystemSize), [optimalSystemSize])
 
-  // Combine data for chart
+  // Calculate system costs
+  const minSystemCost = calculateSystemCost(minSystemSize)
+  const optimalSystemCost = calculateSystemCost(optimalSystemSize)
+
+  // Combine data for chart - showing net profit (income - installation cost)
   const chartData = useMemo(() => {
     return minSystemData.map((minData, index) => ({
       year: minData.year,
-      minimum: minData.cumulative,
-      optimal: optimalSystemData[index].cumulative
+      minimum: minData.cumulative - minSystemCost, // Net profit
+      optimal: optimalSystemData[index].cumulative - optimalSystemCost // Net profit
     }))
-  }, [minSystemData, optimalSystemData])
+  }, [minSystemData, optimalSystemData, minSystemCost, optimalSystemCost])
 
   useEffect(() => {
     // Simulate analysis process
@@ -234,9 +250,28 @@ function AnalyzeContent() {
                         <span className="font-bold text-green-600">€{minSystemData[1].income.toLocaleString()}</span>
                       </div>
                       <div className="border-t border-blue-300 pt-3 mt-3">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mb-3">
                           <span className="font-semibold text-gray-900">20-Year Total:</span>
                           <span className="font-bold text-2xl text-blue-600">€{minSystemData[20].cumulative.toLocaleString()}</span>
+                        </div>
+
+                        {/* System Cost - Highlighted with Black Friday Discount */}
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-3 -mx-1 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 bg-yellow-400 text-gray-900 text-xs font-bold px-2 py-1 rounded-bl-lg">
+                            BLACK FRIDAY
+                          </div>
+                          <div className="flex justify-between items-center mt-6">
+                            <span className="font-semibold">Our Price:</span>
+                            <div className="text-right">
+                              <div className="text-xs text-blue-200 line-through">
+                                €{((minSystemSize * PRICING_CONFIG.ORIGINAL_PRICE_PER_KWP) + PRICING_CONFIG.FIXED_COST).toLocaleString()}
+                              </div>
+                              <span className="font-bold text-xl text-yellow-300">€{calculateSystemCost(minSystemSize).toLocaleString()}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-blue-100 mt-1">
+                            <span className="line-through">€{PRICING_CONFIG.ORIGINAL_PRICE_PER_KWP}/kWp</span> <span className="text-yellow-300 font-bold">€{PRICING_CONFIG.PRICE_PER_KWP}/kWp</span> + €{PRICING_CONFIG.FIXED_COST} installation
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -270,9 +305,28 @@ function AnalyzeContent() {
                         <span className="font-bold text-green-600">€{optimalSystemData[1].income.toLocaleString()}</span>
                       </div>
                       <div className="border-t border-purple-300 pt-3 mt-3">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mb-3">
                           <span className="font-semibold text-gray-900">20-Year Total:</span>
                           <span className="font-bold text-2xl text-purple-600">€{optimalSystemData[20].cumulative.toLocaleString()}</span>
+                        </div>
+
+                        {/* System Cost - Highlighted with Black Friday Discount */}
+                        <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg p-3 -mx-1 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 bg-yellow-400 text-gray-900 text-xs font-bold px-2 py-1 rounded-bl-lg">
+                            BLACK FRIDAY
+                          </div>
+                          <div className="flex justify-between items-center mt-6">
+                            <span className="font-semibold">Our Price:</span>
+                            <div className="text-right">
+                              <div className="text-xs text-purple-200 line-through">
+                                €{((optimalSystemSize * PRICING_CONFIG.ORIGINAL_PRICE_PER_KWP) + PRICING_CONFIG.FIXED_COST).toLocaleString()}
+                              </div>
+                              <span className="font-bold text-xl text-yellow-300">€{calculateSystemCost(optimalSystemSize).toLocaleString()}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-purple-100 mt-1">
+                            <span className="line-through">€{PRICING_CONFIG.ORIGINAL_PRICE_PER_KWP}/kWp</span> <span className="text-yellow-300 font-bold">€{PRICING_CONFIG.PRICE_PER_KWP}/kWp</span> + €{PRICING_CONFIG.FIXED_COST} installation
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -280,31 +334,51 @@ function AnalyzeContent() {
                 </div>
               </div>
 
-              {/* 20-Year Income Projection Chart */}
+              {/* 20-Year Net Profit & Break-Even Chart */}
               <div className="bg-white rounded-2xl p-6 mb-8 border border-gray-200">
                 <div className="mb-6">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    20-Year Income Projection
+                    20-Year Net Profit & Break-Even Analysis
                   </h3>
                   <p className="text-gray-600">
-                    Cumulative income from feed-in tariff at €0.15/kWh (includes 0.5% annual degradation)
+                    Net profit after installation cost. Line crosses zero at break-even point. (€0.15/kWh feed-in tariff, 0.5% annual degradation)
                   </p>
                 </div>
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+
+                    {/* Break-even line at y=0 */}
+                    <ReferenceLine
+                      y={0}
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      label={{
+                        value: 'Break-Even',
+                        position: 'insideTopRight',
+                        fill: '#ef4444',
+                        fontWeight: 'bold'
+                      }}
+                    />
+
                     <XAxis
                       dataKey="year"
                       label={{ value: 'Year', position: 'insideBottom', offset: -5 }}
                       stroke="#6b7280"
                     />
                     <YAxis
-                      label={{ value: 'Cumulative Income (€)', angle: -90, position: 'insideLeft' }}
+                      label={{ value: 'Net Profit (€)', angle: -90, position: 'insideLeft' }}
                       stroke="#6b7280"
                       tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
                     />
                     <Tooltip
-                      formatter={(value: number) => [`€${value.toLocaleString()}`, '']}
+                      formatter={(value: number) => [
+                        value >= 0
+                          ? `€${value.toLocaleString()} profit`
+                          : `-€${Math.abs(value).toLocaleString()} (investment)`,
+                        ''
+                      ]}
                       labelFormatter={(label) => `Year ${label}`}
                       contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                     />
@@ -333,6 +407,33 @@ function AnalyzeContent() {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Property Satellite View */}
+              {lat && lng && (
+                <div className="bg-white rounded-2xl p-6 mb-8 border border-gray-200">
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Your Property
+                    </h3>
+                    <p className="text-gray-600">
+                      Satellite view of your selected location
+                    </p>
+                    {address && (
+                      <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        {address}
+                      </p>
+                    )}
+                  </div>
+                  <div className="relative rounded-xl overflow-hidden shadow-lg">
+                    <img
+                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=19&size=800x400&maptype=satellite&markers=color:red%7C${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+                      alt="Property satellite view"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Feed-in Tariff Info */}
               <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 text-white mb-8">
