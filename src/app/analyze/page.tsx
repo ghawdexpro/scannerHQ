@@ -67,10 +67,14 @@ function AnalyzeContent() {
   const searchParams = useSearchParams()
   const [isAnalyzing, setIsAnalyzing] = useState(true)
   const [analysisComplete, setAnalysisComplete] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   const address = searchParams.get('address')
   const lat = searchParams.get('lat')
   const lng = searchParams.get('lng')
+
+  // Access environment variable properly in client component
+  const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   // Calculate projections for both scenarios
   const minSystemSize = 6 // kW (midpoint of 5-8 kW)
@@ -426,11 +430,25 @@ function AnalyzeContent() {
                     )}
                   </div>
                   <div className="relative rounded-xl overflow-hidden shadow-lg">
-                    <img
-                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=19&size=800x400&maptype=satellite&markers=color:red%7C${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
-                      alt="Property satellite view"
-                      className="w-full h-auto"
-                    />
+                    {!imageError && mapsApiKey ? (
+                      <img
+                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=19&size=800x400&maptype=satellite&markers=color:red%7C${lat},${lng}&key=${mapsApiKey}`}
+                        alt="Property satellite view"
+                        className="w-full h-auto"
+                        onError={() => {
+                          console.error('Failed to load Google Maps Static image')
+                          setImageError(true)
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-[400px] bg-gray-100 flex items-center justify-center">
+                        <div className="text-center text-gray-600">
+                          <MapPin className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                          <p className="font-semibold">Satellite image unavailable</p>
+                          <p className="text-sm mt-1">Location: {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
