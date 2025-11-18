@@ -65,22 +65,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Phone className="w-8 h-8 text-blue-600" />
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Phone className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Welcome to Solar Scan
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Enter your phone number to analyze your property
             </p>
           </div>
@@ -90,10 +90,10 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3"
+              className="mb-4 sm:mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3"
             >
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-700 text-xs sm:text-sm">{error}</p>
             </motion.div>
           )}
 
@@ -102,23 +102,23 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3"
+              className="mb-4 sm:mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3"
             >
               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <p className="text-green-700 text-sm">
+              <p className="text-green-700 text-xs sm:text-sm">
                 OTP sent! Redirecting to verification...
               </p>
             </motion.div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="phone" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                 Phone Number
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-3 text-gray-500 font-semibold">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm sm:text-base">
                   +356
                 </span>
                 <input
@@ -128,7 +128,11 @@ export default function LoginPage() {
                   value={phone}
                   onChange={handlePhoneChange}
                   disabled={loading || success}
-                  className="w-full pl-16 pr-4 py-3 border-2 border-gray-300 rounded-lg font-mono text-lg focus:border-blue-500 focus:outline-none transition-colors disabled:bg-gray-100"
+                  inputMode="numeric"
+                  pattern="[0-9 ]*"
+                  maxLength="12"
+                  autocomplete="tel"
+                  className="w-full pl-14 sm:pl-16 pr-4 py-3 sm:py-4 border-2 border-gray-300 rounded-lg font-mono text-base sm:text-lg focus:border-blue-500 focus:outline-none transition-colors disabled:bg-gray-100 min-h-12"
                 />
               </div>
               <p className="text-xs text-gray-600 mt-2">
@@ -139,17 +143,19 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || success || !phone}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 text-white py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-12"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Sending OTP...
+                  <span className="hidden sm:inline">Sending OTP...</span>
+                  <span className="sm:hidden">Sending...</span>
                 </>
               ) : (
                 <>
                   <Phone className="w-5 h-5" />
-                  Send OTP Code
+                  <span className="hidden sm:inline">Send OTP Code</span>
+                  <span className="sm:hidden">Send Code</span>
                 </>
               )}
             </button>

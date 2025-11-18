@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/middleware/rate-limit'
 import { createClient } from '@supabase/supabase-js'
+import { generateQuotePDF } from '@/lib/pdf/quote-generator'
+import { sendCustomerQuoteEmail, sendTeamNotificationEmail } from '@/lib/email/sendgrid'
 
 // Initialize Supabase server client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
