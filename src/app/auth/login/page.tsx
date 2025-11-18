@@ -130,8 +130,8 @@ export default function LoginPage() {
                   disabled={loading || success}
                   inputMode="numeric"
                   pattern="[0-9 ]*"
-                  maxLength="12"
-                  autocomplete="tel"
+                  maxLength={12}
+                  autoComplete="tel"
                   className="w-full pl-14 sm:pl-16 pr-4 py-3 sm:py-4 border-2 border-gray-300 rounded-lg font-mono text-base sm:text-lg focus:border-blue-500 focus:outline-none transition-colors disabled:bg-gray-100 min-h-12"
                 />
               </div>

@@ -40,10 +40,10 @@ export async function generateQuotePDF(data: QuoteData): Promise<Buffer> {
     format: 'a4'
   })
 
-  const primaryColor = [37, 99, 235] // Blue-600
-  const secondaryColor = [16, 185, 129] // Green-600
-  const textColor = [31, 41, 55] // Gray-800
-  const lightGray = [243, 244, 246] // Gray-100
+  const primaryColor: [number, number, number] = [37, 99, 235] // Blue-600
+  const secondaryColor: [number, number, number] = [16, 185, 129] // Green-600
+  const textColor: [number, number, number] = [31, 41, 55] // Gray-800
+  const lightGray: [number, number, number] = [243, 244, 246] // Gray-100
 
   let yPos = 20
 
@@ -145,7 +145,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<Buffer> {
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
 
-  const withGrantDetails = [
+  const withGrantDetails: [string, string, boolean?][] = [
     ['Installation Cost:', `€${data.withGrant.installationCost.toLocaleString()}`],
     ['Government Grant:', `-€${data.withGrant.grantAmount.toLocaleString()}`, true],
     ['Your Investment:', `€${data.withGrant.upfrontCost.toLocaleString()}`, true],
@@ -155,7 +155,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<Buffer> {
     ['20-Year Profit:', `€${Math.round(data.withGrant.twentyYearSavings).toLocaleString()}`, true]
   ]
 
-  withGrantDetails.forEach(([label, value, isBold]) => {
+  withGrantDetails.forEach(([label, value, isBold]: [string, string, boolean?]) => {
     doc.text(label, 25, yPos)
     if (isBold) doc.setFont('helvetica', 'bold')
     doc.text(value, 120, yPos)
@@ -178,7 +178,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<Buffer> {
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
 
-  const withoutGrantDetails = [
+  const withoutGrantDetails: [string, string, boolean?][] = [
     ['Installation Cost:', `€${data.withoutGrant.installationCost.toLocaleString()}`],
     ['Your Investment:', `€${data.withoutGrant.upfrontCost.toLocaleString()}`, true],
     ['Feed-in Tariff:', `€${data.withoutGrant.feedInTariff.toFixed(3)}/kWh for 20 years`],
@@ -187,7 +187,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<Buffer> {
     ['20-Year Profit:', `€${Math.round(data.withoutGrant.twentyYearSavings).toLocaleString()}`, true]
   ]
 
-  withoutGrantDetails.forEach(([label, value, isBold]) => {
+  withoutGrantDetails.forEach(([label, value, isBold]: [string, string, boolean?]) => {
     doc.text(label, 25, yPos)
     if (isBold) doc.setFont('helvetica', 'bold')
     doc.text(value, 120, yPos)
