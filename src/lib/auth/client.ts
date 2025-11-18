@@ -103,6 +103,98 @@ export async function signOut() {
   }
 }
 
+// Phone auth functions
+export async function signUpWithPhone(phone: string) {
+  try {
+    const { data, error } = await supabaseAuth.auth.signInWithOtp({
+      phone,
+      options: {
+        shouldCreateUser: true
+      }
+    })
+
+    if (error) {
+      console.error('[AUTH] Phone signup error:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('[AUTH] Unexpected error in phone signup:', error)
+    throw error
+  }
+}
+
+export async function verifyPhoneOtp(phone: string, token: string) {
+  try {
+    const { data, error } = await supabaseAuth.auth.verifyOtp({
+      phone,
+      token,
+      type: 'sms'
+    })
+
+    if (error) {
+      console.error('[AUTH] Phone OTP verification error:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('[AUTH] Unexpected error in phone verification:', error)
+    throw error
+  }
+}
+
+// Admin auth functions (email/password)
+export async function signInWithPassword(email: string, password: string) {
+  try {
+    const { data, error } = await supabaseAuth.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (error) {
+      console.error('[AUTH] Admin signin error:', error)
+      throw error
+    }
+
+    // Check if user has admin role
+    if (!data.user?.user_metadata?.role || data.user.user_metadata.role !== 'admin') {
+      await supabaseAuth.auth.signOut()
+      throw new Error('Unauthorized: Admin access required')
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('[AUTH] Unexpected error in admin signin:', error)
+    throw error
+  }
+}
+
+export async function createAdminUser(email: string, password: string) {
+  try {
+    const { data, error } = await supabaseAuth.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: 'admin'
+        }
+      }
+    })
+
+    if (error) {
+      console.error('[AUTH] Admin user creation error:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('[AUTH] Unexpected error creating admin user:', error)
+    throw error
+  }
+}
+
 // Subscribe to auth changes
 export function onAuthStateChange(callback: (user: any) => void) {
   const {
