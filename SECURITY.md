@@ -8,7 +8,7 @@ This document outlines the security measures, best practices, and procedures for
 
 **DO NOT** create public GitHub issues for security vulnerabilities.
 
-Instead, please report security issues to: **security@ghawdexengineering.com**
+Instead, please report security issues to: **security@ghawdex.pro**
 
 Include:
 - Description of the vulnerability
@@ -143,7 +143,7 @@ if (!result.valid) {
 
 **Google Maps API Key:**
 - Enable HTTP referrer restrictions in Google Cloud Console
-- Restrict to your domain: `ghawdexengineering.com/*`, `*.vercel.app/*`
+- Restrict to your domain: `ghawdex.pro/*`, `*.vercel.app/*`
 - Enable only required APIs (Maps JavaScript, Geocoding, Solar, Static Maps)
 - Set quota limits to prevent bill shock
 
@@ -349,8 +349,8 @@ npm run build                       # Check for build-time errors
 
 ## Security Contacts
 
-- **Security Email**: security@ghawdexengineering.com
-- **Development Team**: tech@ghawdexengineering.com
+- **Security Email**: security@ghawdex.pro
+- **Development Team**: tech@ghawdex.pro
 - **Emergency**: [Phone number]
 
 ## Version History

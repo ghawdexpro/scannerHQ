@@ -13,7 +13,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar user={{ email: 'admin@ghawdexengineering.com' }} />
+      <Sidebar user={{ email: 'admin@ghawdex.pro' }} />
       <main className="flex-1 overflow-auto">
         <div className="p-8">
           {children}

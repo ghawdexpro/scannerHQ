@@ -6,9 +6,9 @@ if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY)
 }
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@ghawdexengineering.com'
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@ghawdex.pro'
 const FROM_NAME = 'Ghawdex Engineering'
-const TEAM_EMAIL = process.env.TEAM_NOTIFICATION_EMAIL || 'quotes@ghawdexengineering.com'
+const TEAM_EMAIL = process.env.TEAM_NOTIFICATION_EMAIL || 'quotes@ghawdex.pro'
 
 interface QuoteEmailData {
   customerName: string
@@ -96,7 +96,7 @@ export async function sendCustomerQuoteEmail(data: QuoteEmailData, pdfBuffer?: B
       </div>
 
       <div style="text-align: center;">
-        <a href="mailto:info@ghawdexengineering.com?subject=Quote ${data.quoteId.substring(0, 8)}" class="cta-button">
+        <a href="mailto:info@ghawdex.pro?subject=Quote ${data.quoteId.substring(0, 8)}" class="cta-button">
           📞 Schedule a Consultation
         </a>
       </div>
@@ -116,7 +116,7 @@ export async function sendCustomerQuoteEmail(data: QuoteEmailData, pdfBuffer?: B
 
     <div class="footer">
       <p>Ghawdex Engineering | Malta & Gozo<br>
-      📧 info@ghawdexengineering.com | 🌐 www.ghawdexengineering.com</p>
+      📧 info@ghawdex.pro | 🌐 www.ghawdex.pro</p>
       <p style="margin-top: 10px; font-size: 11px;">
       You received this email because you requested a solar quote through our website.
       </p>

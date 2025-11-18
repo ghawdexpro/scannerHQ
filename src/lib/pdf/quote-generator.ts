@@ -240,7 +240,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<Buffer> {
 
   doc.setFontSize(7)
   doc.setTextColor(100, 100, 100)
-  doc.text('Ghawdex Engineering | www.ghawdexengineering.com | info@ghawdexengineering.com', 105, yPos + 25, { align: 'center' })
+  doc.text('Ghawdex Engineering | www.ghawdex.pro | info@ghawdex.pro', 105, yPos + 25, { align: 'center' })
 
   // Convert to buffer
   const pdfBuffer = Buffer.from(doc.output('arraybuffer'))

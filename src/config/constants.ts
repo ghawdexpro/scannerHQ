@@ -88,15 +88,15 @@ export const APP_CONFIG = {
   MAX_ANALYSES_PER_DAY: 100,
 
   // Email configuration
-  EMAIL_FROM: 'noreply@ghawdexengineering.com',
-  EMAIL_REPLY_TO: 'info@ghawdexengineering.com',
-  SUPPORT_EMAIL: 'support@ghawdexengineering.com',
+  EMAIL_FROM: 'noreply@ghawdex.pro',
+  EMAIL_REPLY_TO: 'info@ghawdex.pro',
+  SUPPORT_EMAIL: 'support@ghawdex.pro',
 
   // Company info
   COMPANY_NAME: 'Ghawdex Engineering',
   COMPANY_PHONE: '+356 2156 0000', // Replace with actual
   COMPANY_ADDRESS: 'Malta', // Replace with actual
-  COMPANY_WEBSITE: 'https://ghawdexengineering.com',
+  COMPANY_WEBSITE: 'https://ghawdex.pro',
 }
 
 // Validation rules

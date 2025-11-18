@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     description: SEO_CONFIG.description,
     type: 'website',
     locale: 'en_MT',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://solarscan.ghawdexengineering.com',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://solarscan.ghawdex.pro',
     siteName: 'Ghawdex Solar Scanner',
     images: [
       {

@@ -212,7 +212,7 @@ This is a private repository. For contributing guidelines, please contact the de
 ## 📞 Support
 
 For technical support or questions:
-- Email: tech@ghawdexengineering.com
+- Email: tech@ghawdex.pro
 - Phone: [Malta Phone Number]
 
 ## 🎯 Roadmap

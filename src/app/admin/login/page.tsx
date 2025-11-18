@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
               <input
                 id="email"
                 type="email"
-                placeholder="admin@ghawdexengineering.com"
+                placeholder="admin@ghawdex.pro"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}

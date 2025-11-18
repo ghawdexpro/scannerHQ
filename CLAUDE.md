@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Solar Scan GE is a Next.js 14 application providing instant solar system analysis and quotes for residential and commercial properties in Malta and Gozo. It uses a dual-analysis approach: Google Solar API for Malta and AI-based fallback for Gozo (where Google Solar coverage is limited).
+Solar Scan GE is a Next.js 14 application providing instant solar system analysis and quotes for residential and commercial properties in Malta and Gozo. It uses a dual-analysis approach: Google Solar API for Malta and AI-based fallback for Gozo (where Google Solar coverage is limited). The application is fully optimized for mobile with PWA capabilities and responsive design.
 
 ## Development Commands
 
@@ -15,6 +15,9 @@ npm run dev          # Start dev server on localhost:3000
 # Production
 npm run build        # Build for production
 npm run start        # Start production server
+
+# Deployment
+railway up           # Deploy to Railway.app
 ```
 
 ## Architecture
@@ -86,18 +89,19 @@ Supabase PostgreSQL with 4 main tables (see `src/types/database.ts`):
 
 **Important**: `analyses.raw_data` is JSONB storing complete API responses for audit trail.
 
-### API Routes (To Be Implemented)
+### API Routes
 
-Directory structure exists but routes are empty:
+Implemented endpoints:
 - `/api/analyze` - Trigger solar analysis (Google API → AI fallback chain)
 - `/api/quote` - Generate and store quote
 - `/api/lead` - Capture lead information
 
-These should:
+These routes:
 1. Use server-side Supabase client (`src/lib/supabase/server.ts`)
 2. Handle API key security (never expose `GOOGLE_SOLAR_API_KEY` to client)
 3. Implement rate limiting per `APP_CONFIG.MAX_REQUESTS_PER_MINUTE`
 4. Return structured errors from `ERROR_MESSAGES` constant
+5. Validate all input using utilities from `src/lib/utils/validation.ts`
 
 ### Environment Variables
 
