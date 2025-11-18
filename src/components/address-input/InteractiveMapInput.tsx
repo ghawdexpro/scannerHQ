@@ -13,6 +13,7 @@ interface InteractiveMapInputProps {
 
 export default function InteractiveMapInput({ onAddressSelect, isLoading = false }: InteractiveMapInputProps) {
   const mapRef = useRef<HTMLDivElement>(null)
+  const markerRef = useRef<google.maps.Marker | null>(null) // Use ref for immediate access
   const [map, setMap] = useState<google.maps.Map | null>(null)
   const [marker, setMarker] = useState<google.maps.Marker | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -191,15 +192,15 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
         toast.success('Gozo location detected - Using AI analysis', { duration: 4000 })
       }
 
-      const validCoords = validation.coordinates || coordinates
-
+      // IMPORTANT: Always use the exact click coordinates, not validation coordinates
+      // Validation coordinates come from re-geocoding which can differ from the click point
       setSelectedLocation({
         address: validation.formattedAddress || address,
-        coordinates: validCoords
+        coordinates: coordinates // Use exact click coordinates
       })
 
       // Center map on the selected location
-      mapInstance.panTo(validCoords)
+      mapInstance.panTo(coordinates)
 
       // Zoom in to the location
       setTimeout(() => {
@@ -207,7 +208,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       }, 300)
 
       // Update or create marker
-      updateMarker(validCoords, mapInstance)
+      updateMarker(coordinates, mapInstance)
 
       setIsValidating(false)
     } catch (error) {
@@ -219,10 +220,11 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
 
   // Update marker on map - ensures only ONE marker exists at a time
   const updateMarker = (coordinates: { lat: number; lng: number }, mapInstance: google.maps.Map) => {
-    // Remove existing marker completely
-    if (marker) {
-      marker.setMap(null)
-      google.maps.event.clearInstanceListeners(marker) // Clean up all event listeners
+    // Remove existing marker completely using ref (immediate access)
+    if (markerRef.current) {
+      markerRef.current.setMap(null)
+      google.maps.event.clearInstanceListeners(markerRef.current) // Clean up all event listeners
+      markerRef.current = null
     }
 
     // Create new marker
@@ -241,6 +243,8 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       }
     })
 
+    // Store in both ref (for immediate access) and state (for React updates)
+    markerRef.current = newMarker
     setMarker(newMarker)
   }
 
