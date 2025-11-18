@@ -26,6 +26,25 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
+  // Handle fullscreen transitions - ensure map resizes properly
+  useEffect(() => {
+    if (map && isFullscreen) {
+      // Small delay to let DOM settle after fullscreen transition
+      const timer = setTimeout(() => {
+        // Trigger resize event to ensure map adjusts to new container size
+        google.maps.event.trigger(map, 'resize')
+
+        // Maintain the current center (don't let it recenter to bounds)
+        const currentCenter = map.getCenter()
+        if (currentCenter) {
+          map.setCenter(currentCenter)
+        }
+      }, 100)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isFullscreen, map])
+
   // Request user's location
   const requestUserLocation = async (mapInstance: google.maps.Map) => {
     if (!navigator.geolocation) {
