@@ -154,8 +154,8 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
     // If zoomed out too far, zoom in instead of placing pin
     // Only place pin when zoom >= 18 (close enough to see individual properties)
     if (currentZoom < 18) {
-      // Zoom in to this location
-      mapInstance.panTo({ lat, lng })
+      // Zoom in to this location using setCenter for immediate, precise positioning
+      mapInstance.setCenter({ lat, lng })
       mapInstance.setZoom(Math.min(currentZoom + 3, 21)) // Zoom in by 3 levels, max 21
       toast('Zoom in closer to select your exact property', {
         icon: '🔍',
