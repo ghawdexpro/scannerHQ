@@ -108,10 +108,10 @@ export default function AddressInput({ onAddressSelect, isLoading = false }: Add
   const isProcessing = isLoading || isValidating
 
   return (
-    <form onSubmit={handleManualSubmit} className="w-full max-w-2xl mx-auto">
-      <div className="relative">
-        <div className="relative">
-          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <form onSubmit={handleManualSubmit} className="w-full max-w-2xl mx-auto address-input-wrapper">
+      <div id="address-input-container" className="relative" style={{ overflow: 'visible' }}>
+        <div className="relative" style={{ overflow: 'visible' }}>
+          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
           <input
             ref={inputRef}
             id="address-input"
@@ -121,11 +121,12 @@ export default function AddressInput({ onAddressSelect, isLoading = false }: Add
             placeholder="Enter your property address in Malta or Gozo..."
             className="w-full pl-12 pr-32 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-blue-500 focus:outline-none transition-colors"
             disabled={isProcessing}
+            autoComplete="off"
           />
           <button
             type="submit"
             disabled={isProcessing || !inputValue.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 z-10"
           >
             {isProcessing ? (
               <>

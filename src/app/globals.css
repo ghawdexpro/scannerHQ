@@ -24,3 +24,125 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Google Maps Autocomplete - Sophisticated Fix */
+
+/* Ensure parent containers don't clip the dropdown */
+.address-input-wrapper {
+  position: relative;
+  overflow: visible !important;
+}
+
+.address-input-wrapper * {
+  overflow: visible !important;
+}
+
+/* Google Maps Autocomplete Container */
+.pac-container {
+  /* Positioning & Z-Index */
+  position: absolute !important;
+  z-index: 99999 !important;
+
+  /* Layout */
+  display: block !important;
+  width: auto !important;
+  min-width: 300px !important;
+  max-width: 600px !important;
+
+  /* Styling */
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+
+  /* Spacing */
+  margin-top: 8px !important;
+  padding: 4px 0 !important;
+
+  /* Visibility */
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+
+  /* Font */
+  font-family: inherit !important;
+}
+
+/* After positioning fix for overflow issues */
+.pac-container:after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 10px !important;
+}
+
+/* Individual autocomplete items */
+.pac-item {
+  display: flex !important;
+  align-items: center !important;
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  border-top: 1px solid #f3f4f6 !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: #111827 !important;
+  background-color: transparent !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.pac-item:first-child {
+  border-top: none !important;
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+.pac-item:last-child {
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+/* Hover state */
+.pac-item:hover,
+.pac-item-selected {
+  background-color: #f3f4f6 !important;
+}
+
+/* Selected state */
+.pac-item-selected {
+  background-color: #eff6ff !important;
+}
+
+/* Hide the location icon */
+.pac-icon {
+  display: none !important;
+}
+
+/* Main query text */
+.pac-item-query {
+  font-size: 14px !important;
+  color: #111827 !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Secondary text */
+.pac-matched {
+  font-weight: 600 !important;
+  color: #2563eb !important;
+}
+
+/* Ensure the input container doesn't clip */
+#address-input-container {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Force visibility on all parent elements */
+body .pac-container {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}

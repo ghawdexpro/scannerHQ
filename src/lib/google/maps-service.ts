@@ -8,9 +8,8 @@ let isConfigured = false
 const configureGoogleMaps = () => {
   if (!isConfigured && typeof window !== 'undefined') {
     setOptions({
-      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-      version: 'weekly',
-      libraries: ['places', 'drawing', 'geometry', 'visualization']
+      key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+      v: 'weekly'
     })
     isConfigured = true
   }
@@ -19,7 +18,12 @@ const configureGoogleMaps = () => {
 // Load Google Maps core library
 export const loadGoogleMaps = async () => {
   try {
+    if (typeof window === 'undefined') {
+      throw new Error('Google Maps can only be loaded on the client side')
+    }
+
     configureGoogleMaps()
+
     if (!libraryCache.core) {
       libraryCache.core = await importLibrary('core')
     }
@@ -33,9 +37,14 @@ export const loadGoogleMaps = async () => {
 // Load specific Google Maps library
 export const loadLibrary = async (name: string) => {
   try {
+    if (typeof window === 'undefined') {
+      throw new Error('Google Maps can only be loaded on the client side')
+    }
+
     configureGoogleMaps()
+
     if (!libraryCache[name]) {
-      libraryCache[name] = await importLibrary(name)
+      libraryCache[name] = await importLibrary(name as any)
     }
     return libraryCache[name]
   } catch (error) {
@@ -75,6 +84,10 @@ export const validateMaltaAddress = async (address: string): Promise<{
     const lat = typeof location.lat === 'function' ? location.lat() : location.lat
     const lng = typeof location.lng === 'function' ? location.lng() : location.lng
 
+    // Ensure lat and lng are numbers
+    const latitude = Number(lat)
+    const longitude = Number(lng)
+
     // Check if address is in Malta (including Gozo)
     const countryComponent = result.address_components.find(
       component => component.types.includes('country')
@@ -85,12 +98,12 @@ export const validateMaltaAddress = async (address: string): Promise<{
     }
 
     // Check if it's Gozo (rough coordinates for Gozo region)
-    const isGozo = lat > 36.0 && lat < 36.1 && lng > 14.2 && lng < 14.35
+    const isGozo = latitude > 36.0 && latitude < 36.1 && longitude > 14.2 && longitude < 14.35
 
     return {
       isValid: true,
       isGozo,
-      coordinates: { lat, lng },
+      coordinates: { lat: latitude, lng: longitude },
       formattedAddress: result.formatted_address
     }
   } catch (error) {

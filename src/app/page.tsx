@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Sun, MapPin, Calculator, Clock, Shield, Zap } from 'lucide-react'
-import AddressInput from '@/components/address-input/AddressInput'
+import InteractiveMapInput from '@/components/address-input/InteractiveMapInput'
 import { MALTA_CONFIG, APP_CONFIG } from '@/config/constants'
 
 export default function Home() {
@@ -36,26 +36,28 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* Address Input Section */}
+            {/* Interactive Map Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-xl p-8 mb-8"
+              className="mb-8"
             >
-              <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-                Start Your Solar Journey
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Enter your property address to get an instant solar potential analysis
-              </p>
-              <AddressInput
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-semibold mb-2 text-gray-800">
+                  Start Your Solar Journey
+                </h2>
+                <p className="text-gray-600">
+                  Use your location or click on the map to select your property
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  100% Free • No commitment • Results in seconds
+                </p>
+              </div>
+              <InteractiveMapInput
                 onAddressSelect={handleAddressSelect}
                 isLoading={isAnalyzing}
               />
-              <p className="text-sm text-gray-500 mt-4">
-                100% Free • No commitment • Results in seconds
-              </p>
             </motion.div>
 
             {/* Key Benefits */}
@@ -216,7 +218,7 @@ export default function Home() {
             Join hundreds of families in Malta & Gozo saving with solar energy
           </p>
           <button
-            onClick={() => document.getElementById('address-input')?.focus()}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-colors"
           >
             Get Your Free Analysis Now
