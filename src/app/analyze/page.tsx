@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { AnalyzeResponse, AnalyzeErrorResponse } from '@/types/api'
 import { useAuth } from '@/context/AuthContext'
+import QuoteRequestForm from '@/components/quote/QuoteRequestForm'
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic'
@@ -20,6 +21,7 @@ function AnalyzeContent() {
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [analysisData, setAnalysisData] = useState<AnalyzeResponse | null>(null)
+  const [showQuoteForm, setShowQuoteForm] = useState(false)
 
   const address = searchParams.get('address')
   const lat = searchParams.get('lat')
@@ -117,22 +119,22 @@ function AnalyzeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-6 sm:py-8 md:py-16">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
               Solar Analysis Results
             </h1>
-            <div className="flex items-center justify-center gap-2 text-gray-600">
-              <MapPin className="w-5 h-5" />
-              <p>{address}</p>
+            <div className="flex items-center justify-center gap-2 text-gray-600 text-sm sm:text-base">
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <p className="break-words">{address}</p>
             </div>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
               Coordinates: {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}
             </p>
           </motion.div>
@@ -211,52 +213,52 @@ function AnalyzeContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 max-w-6xl mx-auto"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 max-w-6xl mx-auto"
             >
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-700">System Size</h3>
-                  <Zap className="w-5 h-5 text-yellow-500" />
+              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">System Size</h3>
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {analysisData.analysis.systemSize.toFixed(1)} kW
                 </p>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">
                   {analysisData.analysis.panelsCount} panels
                 </p>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-700">Annual Generation</h3>
-                  <Sun className="w-5 h-5 text-orange-500" />
+              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">Annual Generation</h3>
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {Math.round(analysisData.analysis.yearlyGeneration).toLocaleString()} kWh
                 </p>
-                <p className="text-sm text-gray-600 mt-2">per year</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">per year</p>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-700">Roof Area</h3>
-                  <Home className="w-5 h-5 text-blue-500" />
+              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">Roof Area</h3>
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {analysisData.analysis.roofArea.toFixed(0)} m²
                 </p>
-                <p className="text-sm text-gray-600 mt-2">usable area</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">usable area</p>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-700">Carbon Offset</h3>
-                  <TrendingUp className="w-5 h-5 text-green-500" />
+              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">Carbon Offset</h3>
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {Math.round(analysisData.analysis.carbonOffsetYearly / 1000)} tons
                 </p>
-                <p className="text-sm text-gray-600 mt-2">CO₂ per year</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">CO₂ per year</p>
               </div>
             </motion.div>
 
@@ -266,13 +268,16 @@ function AnalyzeContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="max-w-4xl mx-auto mb-12"
+                className="max-w-4xl mx-auto mb-8 sm:mb-12"
               >
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="bg-white rounded-lg shadow overflow-hidden">
                   <img
                     src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=20&size=800x400&maptype=satellite&key=${mapsApiKey}`}
                     alt="Satellite view of property"
-                    className="w-full h-96 object-cover"
+                    className="w-full h-48 sm:h-64 md:h-96 object-cover"
+                    loading="lazy"
+                    width="800"
+                    height="400"
                   />
                 </div>
               </motion.div>
@@ -369,20 +374,36 @@ function AnalyzeContent() {
               </div>
             </motion.div>
 
-            {/* CTA */}
+            {/* CTA / Quote Request Form */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="max-w-2xl mx-auto text-center"
+              className="max-w-2xl mx-auto"
             >
-              <button className="bg-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition-colors">
-                <Calculator className="w-5 h-5 inline mr-2" />
-                Get Full Quote & Save Details
-              </button>
-              <p className="text-gray-600 mt-4">
-                We'll prepare a detailed quote and contact you within 3 hours
-              </p>
+              {!showQuoteForm ? (
+                <div className="text-center">
+                  <button
+                    onClick={() => setShowQuoteForm(true)}
+                    className="bg-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Calculator className="w-5 h-5 inline mr-2" />
+                    Get Full Quote & Save Details
+                  </button>
+                  <p className="text-gray-600 mt-4">
+                    We'll prepare a detailed quote and contact you within 3 hours
+                  </p>
+                </div>
+              ) : (
+                <QuoteRequestForm
+                  analysisId={analysisData.analysisId}
+                  onSuccess={() => {
+                    // Optionally redirect or show success message
+                    console.log('Quote requested successfully')
+                  }}
+                  onCancel={() => setShowQuoteForm(false)}
+                />
+              )}
             </motion.div>
           </>
         )}

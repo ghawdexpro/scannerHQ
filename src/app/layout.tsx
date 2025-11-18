@@ -53,7 +53,8 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
   themeColor: '#2563eb',
 }
 
@@ -74,13 +75,15 @@ export default function RootLayout({
           {children}
         </AuthProvider>
         <Toaster
-          position="top-center"
+          position="bottom-center"
           toastOptions={{
             duration: 4000,
             style: {
               background: '#363636',
               color: '#fff',
               fontSize: '14px',
+              borderRadius: '8px',
+              bottom: '20px',
             },
             success: {
               style: {
