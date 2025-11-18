@@ -183,8 +183,113 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log(`[QUOTE] Created ${quotes.length} quotes`)
 
-    // TODO: Generate PDF
-    // TODO: Send email notifications
+    // Generate PDF for the quote (using with-grant scenario as default)
+    const withGrantQuote = quotes.find(q => q.with_grant)
+    const withoutGrantQuote = quotes.find(q => !q.with_grant)
+
+    let pdfBuffer: Buffer | undefined
+
+    try {
+      if (withGrantQuote && withoutGrantQuote && customerId) {
+        // Get customer details for PDF
+        const { data: customer } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('id', customerId)
+          .single()
+
+        if (customer) {
+          pdfBuffer = await generateQuotePDF({
+            customerName: customer.name,
+            customerEmail: customer.email,
+            customerPhone: customer.phone,
+            address: analysis.address,
+            systemSize,
+            panelCount,
+            roofArea: analysis.roof_area,
+            yearlyGeneration,
+            withGrant: {
+              installationCost: withGrantQuote.installation_cost,
+              grantAmount: withGrantQuote.grant_amount,
+              upfrontCost: withGrantQuote.upfront_cost,
+              feedInTariff: withGrantQuote.feed_in_tariff,
+              yearlyRevenue: withGrantQuote.yearly_revenue,
+              roiYears: withGrantQuote.roi_years,
+              twentyYearSavings: withGrantQuote.twenty_year_savings
+            },
+            withoutGrant: {
+              installationCost: withoutGrantQuote.installation_cost,
+              upfrontCost: withoutGrantQuote.upfront_cost,
+              feedInTariff: withoutGrantQuote.feed_in_tariff,
+              yearlyRevenue: withoutGrantQuote.yearly_revenue,
+              roiYears: withoutGrantQuote.roi_years,
+              twentyYearSavings: withoutGrantQuote.twenty_year_savings
+            },
+            carbonOffset: withGrantQuote.carbon_offset,
+            analysisType: analysis.analysis_type,
+            quoteId: withGrantQuote.id,
+            createdAt: withGrantQuote.created_at,
+            expiresAt: withGrantQuote.expires_at
+          })
+
+          console.log('[QUOTE] PDF generated successfully')
+
+          // Send emails
+          try {
+            await sendCustomerQuoteEmail({
+              customerName: customer.name,
+              customerEmail: customer.email,
+              customerPhone: customer.phone,
+              address: analysis.address,
+              systemSize,
+              panelCount,
+              yearlyGeneration,
+              withGrantCost: withGrantQuote.upfront_cost,
+              withoutGrantCost: withoutGrantQuote.upfront_cost,
+              quoteId: withGrantQuote.id
+            }, pdfBuffer)
+
+            console.log('[QUOTE] Customer email sent')
+
+            // Send team notification
+            await sendTeamNotificationEmail({
+              customerName: customer.name,
+              customerEmail: customer.email,
+              customerPhone: customer.phone,
+              address: analysis.address,
+              systemSize,
+              panelCount,
+              yearlyGeneration,
+              withGrantCost: withGrantQuote.upfront_cost,
+              withoutGrantCost: withoutGrantQuote.upfront_cost,
+              quoteId: withGrantQuote.id
+            }, {
+              roofType,
+              propertyType,
+              budget,
+              timeline,
+              electricityBill,
+              notes
+            })
+
+            console.log('[QUOTE] Team notification sent')
+
+            // Update quote status to 'sent'
+            await supabase
+              .from('quotes')
+              .update({ status: 'sent', sent_at: new Date().toISOString() })
+              .in('id', quotes.map(q => q.id))
+
+          } catch (emailError) {
+            console.error('[QUOTE] Email sending failed:', emailError)
+            // Continue even if email fails - quote is still created
+          }
+        }
+      }
+    } catch (pdfError) {
+      console.error('[QUOTE] PDF generation failed:', pdfError)
+      // Continue even if PDF fails - quote is still created
+    }
 
     return NextResponse.json(
       {

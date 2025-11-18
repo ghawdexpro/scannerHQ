@@ -64,6 +64,7 @@ export type Database = {
           viewed_at?: string
           expires_at: string
           pdf_url?: string
+          metadata?: Record<string, any>
         }
         Insert: Omit<Database['public']['Tables']['quotes']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['quotes']['Insert']>
