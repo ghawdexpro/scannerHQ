@@ -1,16 +1,34 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Sun, MapPin, Calculator, Clock, Shield, Zap } from 'lucide-react'
 import InteractiveMapInput from '@/components/address-input/InteractiveMapInput'
 import { MALTA_CONFIG, APP_CONFIG } from '@/config/constants'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Home() {
+  const router = useRouter()
+  const { isAuthenticated, loading: authLoading } = useAuth()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   const handleAddressSelect = (address: string, coordinates: { lat: number; lng: number }) => {
     setIsAnalyzing(true)
+
+    // Check if user is authenticated
+    if (!isAuthenticated && !authLoading) {
+      console.log('[HOME] User not authenticated, redirecting to login')
+      // Store the analysis params in localStorage for after login
+      localStorage.setItem('pendingAnalysis', JSON.stringify({
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        address
+      }))
+      router.push('/auth/login')
+      return
+    }
+
     // Navigate to analyze page
     window.location.href = `/analyze?lat=${coordinates.lat}&lng=${coordinates.lng}&address=${encodeURIComponent(address)}`
   }

@@ -43,7 +43,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   // Request user's location
   const requestUserLocation = async (mapInstance: google.maps.Map) => {
     if (!navigator.geolocation) {
-      toast.error('Geolocation is not supported by your browser')
+      toast.error('Geolocation is not supported by your browser', { duration: 2000 })
       setShowLocationPrompt(false)
       setIsFullscreen(true)
       return
@@ -77,24 +77,24 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
                 toast.success('Location detected! Please confirm your exact property.')
               } catch (error) {
                 console.error('Validation error:', error)
-                toast.error('Error validating location. Please try selecting manually.')
+                toast.error('Error validating location. Please try selecting manually.', { duration: 2000 })
               }
             } else {
-              toast.error('Could not find address for your location. Please select manually on the map.')
+              toast.error('Could not find address for your location. Please select manually on the map.', { duration: 2000 })
             }
             setIsGettingLocation(false)
             setShowLocationPrompt(false)
           })
         } catch (error) {
           console.error('Geocoding error:', error)
-          toast.error('Error finding your address. Please select manually on the map.')
+          toast.error('Error finding your address. Please select manually on the map.', { duration: 2000 })
           setIsGettingLocation(false)
           setShowLocationPrompt(false)
         }
       },
       (error) => {
         console.error('Geolocation error:', error)
-        toast.error('Could not get your location. Please select manually on the map.')
+        toast.error('Could not get your location. Please select manually on the map.', { duration: 2000 })
         setIsGettingLocation(false)
         setShowLocationPrompt(false)
       }
@@ -154,7 +154,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
         setIsInitializing(false)
       } catch (error) {
         console.error('Failed to initialize map:', error)
-        toast.error('Failed to load map. Please refresh the page.')
+        toast.error('Failed to load map. Please refresh the page.', { duration: 3000 })
         setIsInitializing(false)
       }
     }
@@ -178,8 +178,9 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       mapInstance.setCenter({ lat, lng })
       mapInstance.setZoom(Math.min(currentZoom + 3, 21)) // Zoom in by 3 levels, max 21
       toast('Zoom in closer to select your exact property', {
+        id: 'zoom-prompt',
         icon: '🔍',
-        duration: 2000
+        duration: 1000
       })
       return
     }
@@ -196,13 +197,13 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           const address = results[0].formatted_address
           await validateAndSetLocation(address, { lat, lng }, mapInstance)
         } else {
-          toast.error('Could not find address for this location')
+          toast.error('Could not find address for this location', { duration: 2000 })
           setIsValidating(false)
         }
       })
     } catch (error) {
       console.error('Geocoding error:', error)
-      toast.error('Error finding address. Please try again.')
+      toast.error('Error finding address. Please try again.', { duration: 2000 })
       setIsValidating(false)
     }
   }
@@ -219,7 +220,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       const validation = await validateMaltaAddress(address)
 
       if (!validation.isValid) {
-        toast.error(ERROR_MESSAGES.INVALID_ADDRESS)
+        toast.error(ERROR_MESSAGES.INVALID_ADDRESS, { duration: 2000 })
         setIsValidating(false)
         return
       }
@@ -246,7 +247,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       setIsValidating(false)
     } catch (error) {
       console.error('Validation error:', error)
-      toast.error('Error validating location. Please try again.')
+      toast.error('Error validating location. Please try again.', { duration: 2000 })
       setIsValidating(false)
     }
   }

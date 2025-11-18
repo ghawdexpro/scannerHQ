@@ -1,18 +1,21 @@
 'use client'
 
 import { Suspense, useEffect, useState, useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Loader2, MapPin, Sun, Zap, Calculator, TrendingUp, Home, DollarSign, AlertCircle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { AnalyzeResponse, AnalyzeErrorResponse } from '@/types/api'
+import { useAuth } from '@/context/AuthContext'
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic'
 
 function AnalyzeContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
+  const { user, loading: authLoading, isAuthenticated } = useAuth()
   const [isAnalyzing, setIsAnalyzing] = useState(true)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
@@ -25,8 +28,26 @@ function AnalyzeContent() {
   // Access environment variable properly in client component
   const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
+  // Check authentication
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      console.log('[ANALYZE] User not authenticated, redirecting to login')
+      router.push('/auth/login')
+    }
+  }, [authLoading, isAuthenticated, router])
+
   useEffect(() => {
     const performAnalysis = async () => {
+      // Wait for auth check to complete
+      if (authLoading) {
+        return
+      }
+
+      // Redirect to login if not authenticated
+      if (!isAuthenticated) {
+        return
+      }
+
       if (!address || !lat || !lng) {
         setAnalysisError('Invalid parameters')
         setIsAnalyzing(false)
@@ -44,7 +65,9 @@ function AnalyzeContent() {
           body: JSON.stringify({
             address,
             lat: parseFloat(lat),
-            lng: parseFloat(lng)
+            lng: parseFloat(lng),
+            userId: user?.id,
+            phone: user?.phone
           })
         })
 
