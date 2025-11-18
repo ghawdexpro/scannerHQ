@@ -64,3 +64,25 @@ cypress/screenshots
 # Temporary files
 tmp/
 temp/
+
+# Supabase
+.supabase/
+
+# Security & Credentials
+*.key
+*.cert
+*.crt
+*.pem
+secrets/
+credentials.json
+service-account*.json
+
+# Database
+*.sql.gz
+*.dump
+*.backup
+db_backup/
+
+# API Keys & Tokens
+.api_keys
+.tokens
