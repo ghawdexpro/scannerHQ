@@ -148,6 +148,22 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
     const lat = latLng.lat()
     const lng = latLng.lng()
 
+    // Get current zoom level
+    const currentZoom = mapInstance.getZoom() || 11
+
+    // If zoomed out too far, zoom in instead of placing pin
+    // Only place pin when zoom >= 18 (close enough to see individual properties)
+    if (currentZoom < 18) {
+      // Zoom in to this location
+      mapInstance.panTo({ lat, lng })
+      mapInstance.setZoom(Math.min(currentZoom + 3, 21)) // Zoom in by 3 levels, max 21
+      toast('Zoom in closer to select your exact property', {
+        icon: '🔍',
+        duration: 2000
+      })
+      return
+    }
+
     setIsValidating(true)
 
     try {
@@ -199,13 +215,10 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
         coordinates: coordinates // Use exact click coordinates
       })
 
-      // Center map on the selected location
-      mapInstance.panTo(coordinates)
-
-      // Zoom in to the location
-      setTimeout(() => {
-        mapInstance.setZoom(21)
-      }, 300)
+      // Center map on the EXACT pin location and zoom in
+      // Use setCenter instead of panTo for immediate, precise positioning
+      mapInstance.setCenter(coordinates)
+      mapInstance.setZoom(21)
 
       // Update or create marker
       updateMarker(coordinates, mapInstance)
