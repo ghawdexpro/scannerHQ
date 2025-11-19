@@ -137,6 +137,8 @@ export const SEO_CONFIG = {
 
 // Feature flags (can be overridden by env vars)
 export const FEATURES = {
+  // DEPRECATED: AI fallback now uses location-based routing instead of feature flag
+  // Gozo addresses automatically use AI analysis, Malta main island uses Google Solar API
   ENABLE_GOZO_AI_FALLBACK: process.env.NEXT_PUBLIC_ENABLE_GOZO_AI_FALLBACK === 'true',
   ENABLE_3D_VISUALIZATION: process.env.NEXT_PUBLIC_ENABLE_3D_VISUALIZATION === 'true',
   ENABLE_WHATSAPP: process.env.NEXT_PUBLIC_ENABLE_WHATSAPP === 'true',
