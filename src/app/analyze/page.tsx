@@ -28,6 +28,18 @@ function AnalyzeContent() {
   const lat = searchParams.get('lat')
   const lng = searchParams.get('lng')
 
+  // Combine both scenarios for dual-line chart
+  const combinedProjections = useMemo(() => {
+    if (!analysisData?.analysis?.withGrant?.projections || !analysisData?.analysis?.withoutGrant?.projections) {
+      return []
+    }
+    return analysisData.analysis.withGrant.projections.map((item, index) => ({
+      year: item.year,
+      withGrantSavings: item.cumulativeSavings,
+      withoutGrantSavings: analysisData.analysis.withoutGrant.projections[index]?.cumulativeSavings || 0
+    }))
+  }, [analysisData])
+
   // Access environment variable properly in client component
   const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
@@ -271,26 +283,12 @@ function AnalyzeContent() {
             )}
 
             {/* Financial Results - Stunning Single-Page Layout */}
-            {(() => {
-              // Combine both scenarios for dual-line chart
-              const combinedProjections = useMemo(() => {
-                if (!analysisData.analysis.withGrant.projections || !analysisData.analysis.withoutGrant.projections) {
-                  return []
-                }
-                return analysisData.analysis.withGrant.projections.map((item, index) => ({
-                  year: item.year,
-                  withGrantSavings: item.cumulativeSavings,
-                  withoutGrantSavings: analysisData.analysis.withoutGrant.projections[index]?.cumulativeSavings || 0
-                }))
-              }, [analysisData])
-
-              return (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="max-w-6xl mx-auto mb-12"
-                >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="max-w-6xl mx-auto mb-12"
+            >
                   {/* Hero Metrics - Big Savings Numbers */}
                   <div className="bg-gradient-to-br from-red-900/30 via-orange-900/20 to-amber-900/30 border border-red-500/30 rounded-2xl shadow-[0_0_40px_rgba(239,68,68,0.2)] p-6 sm:p-8 mb-8 backdrop-blur-sm">
                     <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-6 sm:mb-8">
@@ -491,34 +489,33 @@ function AnalyzeContent() {
                   </div>
 
                   {/* System Specifications (Compact) */}
-                  <div className="bg-gray-50 rounded-xl p-4 sm:p-6">
-                    <h4 className="font-semibold text-gray-700 mb-3 text-sm sm:text-base">System Specifications</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                  <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-4 sm:p-6">
+                    <h4 className="font-semibold text-white mb-3 text-sm sm:text-base">System Specifications</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-300">
                       <div className="flex items-center gap-2">
-                        <Sun className="w-4 h-4 text-yellow-600" />
+                        <Sun className="w-4 h-4 text-yellow-500" />
                         <span>{analysisData.analysis.panelsCount} Panels × 400W</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-blue-600" />
+                        <Zap className="w-4 h-4 text-red-500" />
                         <span>{analysisData.analysis.systemSize.toFixed(1)} kWp System</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-green-600" />
+                        <TrendingUp className="w-4 h-4 text-amber-500" />
                         <span>{Math.round(analysisData.analysis.yearlyGeneration).toLocaleString()} kWh/year</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Home className="w-4 h-4 text-gray-600" />
+                        <Home className="w-4 h-4 text-orange-500" />
                         <span>{analysisData.analysis.roofArea} m² Roof</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Sun className="w-4 h-4 text-orange-600" />
+                        <Sun className="w-4 h-4 text-amber-500" />
                         <span>{analysisData.analysis.maxSunshineHours.toLocaleString()} hrs/year</span>
                       </div>
                     </div>
                   </div>
                 </motion.div>
-              )
-            })()}
+            </motion.div>
 
             {/* CTA / Quote Request Form */}
             <motion.div
