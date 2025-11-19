@@ -1,9 +1,15 @@
 'use client'
 
+// TODO: REPLACE THIS EMAIL OTP LOGIN WITH GOOGLE AND APPLE OAUTH
+// Current implementation uses email magic links which has poor UX
+// Replace with OAuth buttons for Google Sign-In and Apple Sign-In
+// See: https://supabase.com/docs/guides/auth/social-login
+// Note: Authentication is currently DISABLED in middleware for development
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Mail, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { Mail, Loader2, AlertCircle, CheckCircle, Info } from 'lucide-react'
 import { signUpWithEmail } from '@/lib/auth/client'
 import { sanitizeEmail, isValidEmail } from '@/lib/utils/validation'
 import Link from 'next/link'
@@ -75,6 +81,19 @@ export default function LoginPage() {
               Enter your email to analyze your property
             </p>
           </div>
+
+          {/* Dev Notice - Authentication Temporarily Disabled */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 sm:mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3"
+          >
+            <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs sm:text-sm text-yellow-800">
+              <p className="font-semibold mb-1">Development Mode</p>
+              <p>Authentication is temporarily disabled. All pages are accessible without login. Google & Apple OAuth coming soon.</p>
+            </div>
+          </motion.div>
 
           {/* Error Message */}
           {error && (

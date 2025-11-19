@@ -1,12 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
 
+// TODO: REPLACE EMAIL OTP WITH GOOGLE AND APPLE OAUTH
+// Current email magic link implementation has poor UX
+// Implement OAuth providers for better user experience:
+// - Google Sign-In: https://supabase.com/docs/guides/auth/social-login/auth-google
+// - Apple Sign-In: https://supabase.com/docs/guides/auth/social-login/auth-apple
+// Benefits: One-click login, no waiting for emails, better conversion rates
+// Note: Requires OAuth app setup in Google Cloud Console and Apple Developer
+
 // Create Supabase client for auth
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 export const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey)
 
-// Email auth functions
+// Email auth functions (TO BE REPLACED WITH OAUTH)
 export async function signUpWithEmail(email: string) {
   try {
     const { data, error } = await supabaseAuth.auth.signInWithOtp({
