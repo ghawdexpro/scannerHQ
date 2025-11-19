@@ -120,23 +120,83 @@ function AnalyzeContent() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black">
       <div className="container mx-auto px-4 py-6 sm:py-8 md:py-16">
-        {/* Header */}
-        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+        {/* Progress Indicator */}
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center gap-2 text-sm text-gray-400">
+            <span className="text-green-500">✓ Step 1: Location</span>
+            <span className="text-gray-600">→</span>
+            <span className="text-red-500 font-semibold">Step 2: Analysis</span>
+            <span className="text-gray-600">→</span>
+            <span>Step 3: Quote</span>
+          </div>
+        </div>
+
+        {/* Hero Section - "Your Roof Will PAY YOU" */}
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="bg-gradient-to-br from-red-900/40 via-orange-900/30 to-amber-900/40 border border-red-500/40 rounded-3xl p-8 sm:p-12 md:p-16 shadow-[0_0_60px_rgba(239,68,68,0.3)] backdrop-blur-sm max-w-5xl mx-auto"
           >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4">
-              Solar Analysis Results
-            </h1>
-            <div className="flex items-center justify-center gap-2 text-gray-300 text-sm sm:text-base">
-              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-red-500" />
-              <p className="break-words">{address}</p>
+            <div className="mb-4">
+              <p className="text-red-400 text-sm sm:text-base font-semibold uppercase tracking-wider mb-2">
+                Government-Backed Income Opportunity
+              </p>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-4 leading-tight">
+                YOUR ROOF WILL <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">PAY YOU</span>
+              </h1>
             </div>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              Coordinates: {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}
-            </p>
+
+            {analysisData && (
+              <>
+                <div className="mb-6">
+                  <div className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-amber-500 mb-2 leading-none">
+                    €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
+                  </div>
+                  <p className="text-xl sm:text-2xl md:text-3xl text-white font-semibold mb-2">
+                    OVER 20 YEARS
+                  </p>
+                  <p className="text-base sm:text-lg md:text-xl text-gray-300">
+                    That's <span className="text-amber-400 font-bold">€{Math.round(analysisData.analysis.withGrant.twentyYearSavings / 20 / 12).toLocaleString()}</span> in passive income every month
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto text-left">
+                  <div className="bg-gray-900/60 border border-green-500/40 rounded-xl p-4 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-green-400 mb-2">
+                      <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                      <span className="font-semibold text-sm sm:text-base">Break Even</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">2 Years</p>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1">Then pure profit!</p>
+                  </div>
+
+                  <div className="bg-gray-900/60 border border-amber-500/40 rounded-xl p-4 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-amber-400 mb-2">
+                      <DollarSign className="w-5 h-5 flex-shrink-0" />
+                      <span className="font-semibold text-sm sm:text-base">Government Grant</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">€2,400</p>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1">Included!</p>
+                  </div>
+
+                  <div className="bg-gray-900/60 border border-red-500/40 rounded-xl p-4 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-red-400 mb-2">
+                      <TrendingUp className="w-5 h-5 flex-shrink-0" />
+                      <span className="font-semibold text-sm sm:text-base">ROI</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">540%</p>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1">Over 20 years</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-400">
+                  <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <p className="break-words">{address}</p>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
 
@@ -289,31 +349,34 @@ function AnalyzeContent() {
               transition={{ delay: 0.4 }}
               className="max-w-6xl mx-auto mb-12"
             >
-                  {/* Hero Metrics - Big Savings Numbers */}
+                  {/* Income Metrics */}
                   <div className="bg-gradient-to-br from-red-900/30 via-orange-900/20 to-amber-900/30 border border-red-500/30 rounded-2xl shadow-[0_0_40px_rgba(239,68,68,0.2)] p-6 sm:p-8 mb-8 backdrop-blur-sm">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-6 sm:mb-8">
-                      💰 Your Potential Solar Savings
+                    <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-2">
+                      YOUR 20-YEAR INCOME STREAM
                     </h2>
+                    <p className="text-center text-gray-400 mb-6 sm:mb-8 text-sm sm:text-base">
+                      Government pays you for every kWh you generate
+                    </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
-                      {/* Total 20-Year Savings */}
-                      <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-red-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-red-500/30 transition-all">
-                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3" />
-                        <p className="text-3xl sm:text-4xl font-bold text-red-500 mb-2">
+                      {/* Total 20-Year Income */}
+                      <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-green-500/40 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-green-500/30 transition-all">
+                        <DollarSign className="w-10 h-10 sm:w-12 sm:h-12 text-green-500 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-green-500 mb-2">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-300">Total 20-Year Savings</p>
-                        <p className="text-xs text-gray-500 mt-1">(with government grant)</p>
+                        <p className="text-xs sm:text-sm text-gray-300">Total Income</p>
+                        <p className="text-xs text-gray-500 mt-1">over 20 years</p>
                       </div>
 
-                      {/* Breakeven Time */}
+                      {/* Pure Profit Starts */}
                       <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-amber-500/30 transition-all">
-                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3" />
+                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3" />
                         <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2">
-                          {analysisData.analysis.withGrant.roiYears}
+                          Year {analysisData.analysis.withGrant.roiYears}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-300">Years to Breakeven</p>
-                        <p className="text-xs text-gray-500 mt-1">Recover your investment</p>
+                        <p className="text-xs sm:text-sm text-gray-300">Pure Profit Starts</p>
+                        <p className="text-xs text-gray-500 mt-1">Investment recovered</p>
                       </div>
 
                       {/* Government Grant */}
@@ -341,12 +404,15 @@ function AnalyzeContent() {
                     </div>
                   </div>
 
-                  {/* Dual-Line Chart */}
+                  {/* Income Timeline Chart */}
                   {combinedProjections.length > 0 && (
                     <div className="bg-gray-800/50 border border-gray-700 rounded-2xl shadow-lg p-6 sm:p-8 mb-8 backdrop-blur-sm">
-                      <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">
-                        Cumulative Savings Over 20 Years
+                      <h3 className="text-xl sm:text-2xl font-bold mb-2 text-white">
+                        Your Income Growth Over 20 Years
                       </h3>
+                      <p className="text-sm text-gray-400 mb-4 sm:mb-6">
+                        Watch your passive income accumulate month after month
+                      </p>
                       <ResponsiveContainer width="100%" height={350}>
                         <LineChart
                           data={combinedProjections}
@@ -527,14 +593,30 @@ function AnalyzeContent() {
                 <div className="text-center">
                   <button
                     onClick={() => setShowQuoteForm(true)}
-                    className="bg-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition-colors"
+                    className="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-full font-bold text-lg sm:text-xl hover:from-red-500 hover:to-red-600 transition-all shadow-[0_0_30px_rgba(239,68,68,0.5)] hover:shadow-[0_0_40px_rgba(239,68,68,0.7)] border border-red-500/50 active:scale-95"
                   >
-                    <Calculator className="w-5 h-5 inline mr-2" />
-                    Get Full Quote & Save Details
+                    <DollarSign className="w-6 h-6 inline mr-2" />
+                    Claim My Income Stream Now
                   </button>
-                  <p className="text-gray-600 mt-4">
-                    We'll prepare a detailed quote and contact you within 3 hours
-                  </p>
+                  <div className="mt-6 space-y-2">
+                    <p className="text-white font-semibold">
+                      Professional quote delivered in 3 hours
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        No payment required
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        No obligation
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        Start earning in 3 months
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <QuoteRequestForm
