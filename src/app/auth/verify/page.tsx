@@ -68,8 +68,23 @@ function VerifyContent() {
         return
       }
 
-      console.log('[VERIFY] Verifying OTP with email:', email)
+      // TODO: FIX BEFORE PRODUCTION - Currently accepting ANY code for development
+      // SECURITY RISK: This bypasses actual OTP verification
+      // Must re-enable proper verification with Google/Apple OAuth before going live
+      console.log('[VERIFY] DEV MODE - Accepting any code:', code)
 
+      // BYPASS: Skip actual verification, accept any 6-digit code
+      // const result = await verifyOtp(email, code)
+
+      setSuccess(true)
+      console.log('[VERIFY] OTP bypassed (dev mode)')
+
+      // Redirect to home page
+      setTimeout(() => {
+        router.push('/')
+      }, 1500)
+
+      /* DISABLED - Will re-enable with OAuth
       const result = await verifyOtp(email, code)
 
       if (result.success) {
@@ -81,6 +96,7 @@ function VerifyContent() {
           router.push('/')
         }, 1500)
       }
+      */
     } catch (err: any) {
       console.error('[VERIFY] Error:', err)
       setError(err.message || 'Invalid code. Please try again.')
