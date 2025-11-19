@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { TrendingUp, Zap, Calendar, ArrowRight, Check, Sparkles } from 'lucide-react';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import MagneticButton from '@/components/MagneticButton';
+import { trackAnalysisComplete } from '@/lib/analytics/tracking';
+import { useScrollTracking } from '@/hooks/useScrollTracking';
 
 const easing = [0.16, 1, 0.3, 1] as const;
 
@@ -48,6 +51,14 @@ const paybackTimeline = [
 ];
 
 export default function AnalysisPage() {
+  // Track analysis completion
+  useEffect(() => {
+    trackAnalysisComplete(15, 23000, 69000);
+  }, []);
+
+  // Track scroll depth
+  useScrollTracking();
+
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
       {/* Hero Impact Section - MASSIVE SAVINGS NUMBER */}
@@ -330,6 +341,8 @@ export default function AnalysisPage() {
               <MagneticButton
                 href="#contact"
                 variant="primary"
+                trackingEvent="quote_request"
+                trackingLabel="Analysis Page CTA - Get Quote"
               >
                 Get Your Custom Quote
               </MagneticButton>
@@ -337,6 +350,8 @@ export default function AnalysisPage() {
               <MagneticButton
                 href="tel:+35679055156"
                 variant="secondary"
+                trackingEvent="call_button_click"
+                trackingLabel="Analysis Page CTA - Call"
               >
                 Schedule Free Consultation
               </MagneticButton>

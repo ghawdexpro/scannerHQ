@@ -8,11 +8,15 @@ import InteractiveMapInput from '@/components/address-input/InteractiveMapInput'
 import { MALTA_CONFIG, APP_CONFIG } from '@/config/constants'
 import { useAuth } from '@/context/AuthContext'
 import { trackAnalysisRequest } from '@/lib/analytics/tracking'
+import { useScrollTracking } from '@/hooks/useScrollTracking'
 
 export default function Home() {
   const router = useRouter()
   const { isAuthenticated, loading: authLoading } = useAuth()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  // Track scroll depth
+  useScrollTracking()
 
   const handleAddressSelect = (address: string, coordinates: { lat: number; lng: number }) => {
     setIsAnalyzing(true)

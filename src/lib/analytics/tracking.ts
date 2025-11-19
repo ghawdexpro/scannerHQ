@@ -153,3 +153,46 @@ export const trackDownloadPDF = (fileName: string) => {
     file_name: fileName,
   })
 }
+
+export const trackScrollDepth = (depth: number) => {
+  trackEvent('scroll_depth', {
+    event_category: 'engagement',
+    event_label: `Scrolled ${depth}%`,
+    value: depth,
+  })
+}
+
+export const trackVideoPlay = (videoName: string) => {
+  trackEvent('video_play', {
+    event_category: 'engagement',
+    event_label: videoName,
+  })
+}
+
+export const trackFormStart = (formName: string) => {
+  trackEvent('form_start', {
+    event_category: 'engagement',
+    event_label: formName,
+  })
+}
+
+export const trackFormSubmit = (formName: string) => {
+  trackEvent('form_submit', {
+    event_category: 'conversion',
+    event_label: formName,
+  })
+}
+
+export const trackSectionView = (sectionName: string) => {
+  trackEvent('section_view', {
+    event_category: 'engagement',
+    event_label: sectionName,
+  })
+}
+
+export const trackChartInteraction = (chartName: string, interaction: string) => {
+  trackEvent('chart_interaction', {
+    event_category: 'engagement',
+    event_label: `${chartName} - ${interaction}`,
+  })
+}

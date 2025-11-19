@@ -3,16 +3,43 @@
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
+import { trackEvent, trackQuoteRequest, trackCallButton } from '@/lib/analytics/tracking'
 
 interface MagneticButtonProps {
   href: string
   variant?: 'primary' | 'secondary'
   children: React.ReactNode
+  trackingEvent?: string
+  trackingLabel?: string
 }
 
-export default function MagneticButton({ href, variant = 'primary', children }: MagneticButtonProps) {
+export default function MagneticButton({
+  href,
+  variant = 'primary',
+  children,
+  trackingEvent,
+  trackingLabel
+}: MagneticButtonProps) {
   const buttonRef = useRef<HTMLAnchorElement>(null)
   const [position, setPosition] = useState({ x: 0, y: 0 })
+
+  const handleClick = () => {
+    // Track the click event
+    if (trackingEvent) {
+      if (trackingEvent === 'quote_request') {
+        trackQuoteRequest()
+      } else if (trackingEvent === 'call_button_click') {
+        trackCallButton(href)
+      } else {
+        trackEvent(trackingEvent, {
+          event_category: 'engagement',
+          event_label: trackingLabel || String(children),
+          button_variant: variant,
+          href: href,
+        })
+      }
+    }
+  }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!buttonRef.current) return
@@ -45,6 +72,7 @@ export default function MagneticButton({ href, variant = 'primary', children }: 
       className={`${baseStyles} ${variants[variant]}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
       animate={position}
       transition={{ type: 'spring', stiffness: 200, damping: 15 }}
       whileTap={{ scale: 0.95 }}
