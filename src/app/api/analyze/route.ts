@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateAnalysisParams, sanitizeAddress } from '@/lib/utils/validation'
 import { analysissRateLimit } from '@/lib/middleware/rate-limit'
-import { getBuildingInsights, calculateSolarConfiguration } from '@/lib/google/solar-service'
+import { getBuildingInsights, calculateSolarConfiguration, calculateFinancials } from '@/lib/google/solar-service'
 import { analyzeRoofWithAI, calculateAISolarPotential } from '@/lib/ai/roof-detection'
 import { getLocationType } from '@/lib/utils/location'
 import { createClient } from '@supabase/supabase-js'
@@ -72,34 +72,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
         const roofAnalysis = await analyzeRoofWithAI(lat, lng)
         const aiPotential = calculateAISolarPotential(roofAnalysis)
 
+        // Calculate financial projections using same function as Google Solar API
+        const withGrant = calculateFinancials(
+          aiPotential.systemSize,
+          aiPotential.yearlyGeneration,
+          true
+        )
+        const withoutGrant = calculateFinancials(
+          aiPotential.systemSize,
+          aiPotential.yearlyGeneration,
+          false
+        )
+
         solarAnalysis = {
           panelsCount: aiPotential.panelCount,
           systemSize: aiPotential.systemSize,
           yearlyGeneration: aiPotential.yearlyGeneration,
           roofArea: roofAnalysis.roofArea,
           maxSunshineHours: 3000, // Malta average
-          withGrant: {
-            installationCost: aiPotential.systemSize * 1500,
-            grantAmount: Math.min(aiPotential.systemSize * 1500 * 0.3, 2400),
-            upfrontCost: aiPotential.systemSize * 1500 - Math.min(aiPotential.systemSize * 1500 * 0.3, 2400),
-            feedInTariff: 0.105,
-            yearlyRevenue: aiPotential.yearlyGeneration * 0.105,
-            roiYears: 0,
-            twentyYearSavings: 0,
-            totalReturn: 0,
-            projections: []
-          },
-          withoutGrant: {
-            installationCost: aiPotential.systemSize * 1500,
-            grantAmount: 0,
-            upfrontCost: aiPotential.systemSize * 1500,
-            feedInTariff: 0.15,
-            yearlyRevenue: aiPotential.yearlyGeneration * 0.15,
-            roiYears: 0,
-            twentyYearSavings: 0,
-            totalReturn: 0,
-            projections: []
-          },
+          withGrant,
+          withoutGrant,
           roofSegments: []
         }
 

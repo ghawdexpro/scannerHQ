@@ -22,6 +22,7 @@ function AnalyzeContent() {
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [analysisData, setAnalysisData] = useState<AnalyzeResponse | null>(null)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   const address = searchParams.get('address')
   const lat = searchParams.get('lat')
@@ -247,14 +248,24 @@ function AnalyzeContent() {
                 className="max-w-4xl mx-auto mb-8 sm:mb-12"
               >
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                  <img
-                    src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=20&size=800x400&maptype=satellite&key=${mapsApiKey}`}
-                    alt="Satellite view of property"
-                    className="w-full h-48 sm:h-64 md:h-96 object-cover"
-                    loading="lazy"
-                    width="800"
-                    height="400"
-                  />
+                  {!imageError ? (
+                    <img
+                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=20&size=800x400&maptype=satellite&key=${mapsApiKey}`}
+                      alt="Satellite view of property"
+                      className="w-full h-48 sm:h-64 md:h-96 object-cover"
+                      loading="lazy"
+                      width="800"
+                      height="400"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-48 sm:h-64 md:h-96 flex items-center justify-center bg-gray-100">
+                      <div className="text-center text-gray-500">
+                        <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Satellite image unavailable</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
