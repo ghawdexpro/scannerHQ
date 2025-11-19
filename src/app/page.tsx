@@ -16,20 +16,8 @@ export default function Home() {
   const handleAddressSelect = (address: string, coordinates: { lat: number; lng: number }) => {
     setIsAnalyzing(true)
 
-    // Check if user is authenticated
-    if (!isAuthenticated && !authLoading) {
-      console.log('[HOME] User not authenticated, redirecting to login')
-      // Store the analysis params in localStorage for after login
-      localStorage.setItem('pendingAnalysis', JSON.stringify({
-        lat: coordinates.lat,
-        lng: coordinates.lng,
-        address
-      }))
-      router.push('/auth/login')
-      return
-    }
-
-    // Navigate to analyze page
+    // TODO: Re-enable authentication check when Google/Apple OAuth is implemented
+    // Navigate directly to analyze page (auth disabled for development)
     window.location.href = `/analyze?lat=${coordinates.lat}&lng=${coordinates.lng}&address=${encodeURIComponent(address)}`
   }
 
