@@ -66,8 +66,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-2SZNR72JNF'
-  const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID || '809814008544994'
+  const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+  const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
   return (
     <html lang="en" className={inter.variable}>
@@ -97,9 +97,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}', {
-              page_path: window.location.pathname,
-            });
+            gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
 

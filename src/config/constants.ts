@@ -88,9 +88,9 @@ export const APP_CONFIG = {
   MAX_ANALYSES_PER_DAY: 100,
 
   // Email configuration
-  EMAIL_FROM: 'noreply@ghawdex.pro',
-  EMAIL_REPLY_TO: 'info@ghawdex.pro',
-  SUPPORT_EMAIL: 'support@ghawdex.pro',
+  EMAIL_FROM: 'admin@ghawdex.pro',
+  EMAIL_REPLY_TO: 'admin@ghawdex.pro',
+  SUPPORT_EMAIL: 'admin@ghawdex.pro',
 
   // Company info
   COMPANY_NAME: 'Ghawdex Engineering',

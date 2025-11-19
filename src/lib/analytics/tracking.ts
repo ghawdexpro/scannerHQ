@@ -2,11 +2,33 @@
  * Analytics tracking utilities for Google Analytics and Meta Pixel
  */
 
+// Type definitions for Google Analytics gtag
+type GtagCommand = 'config' | 'event' | 'js' | 'set'
+type GtagConfigParams = {
+  page_path?: string
+  page_title?: string
+  [key: string]: any
+}
+
+// Type definitions for Meta Pixel fbq
+type FbqCommand = 'track' | 'trackCustom' | 'init'
+type FbqEventParams = Record<string, any>
+
 // Type definitions for global tracking functions
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void
-    fbq?: (...args: any[]) => void
+    gtag?: (
+      command: GtagCommand,
+      targetIdOrDate: string | Date,
+      config?: GtagConfigParams
+    ) => void
+    fbq?: (
+      command: FbqCommand,
+      eventName: string,
+      parameters?: FbqEventParams
+    ) => void
+    dataLayer?: any[]
+    _fbq?: any
   }
 }
 
@@ -17,8 +39,13 @@ export const trackGAEvent = (
   eventName: string,
   eventParams?: Record<string, any>
 ) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, eventParams)
+  try {
+    if (typeof window !== 'undefined' && window.gtag && typeof window.gtag === 'function') {
+      window.gtag('event', eventName, eventParams)
+    }
+  } catch (error) {
+    // Silently fail - analytics should never break the app
+    console.warn('GA tracking error:', error)
   }
 }
 
@@ -29,8 +56,13 @@ export const trackFBEvent = (
   eventName: string,
   eventParams?: Record<string, any>
 ) => {
-  if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('track', eventName, eventParams)
+  try {
+    if (typeof window !== 'undefined' && window.fbq && typeof window.fbq === 'function') {
+      window.fbq('track', eventName, eventParams)
+    }
+  } catch (error) {
+    // Silently fail - analytics should never break the app
+    console.warn('FB tracking error:', error)
   }
 }
 
@@ -127,12 +159,18 @@ export const trackWhatsAppClick = () => {
 }
 
 export const trackPageView = (pagePath: string, pageTitle: string) => {
-  // Google Analytics
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-2SZNR72JNF', {
-      page_path: pagePath,
-      page_title: pageTitle,
-    })
+  try {
+    // Google Analytics
+    const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+    if (typeof window !== 'undefined' && window.gtag && typeof window.gtag === 'function' && measurementId) {
+      window.gtag('config', measurementId, {
+        page_path: pagePath,
+        page_title: pageTitle,
+      })
+    }
+  } catch (error) {
+    // Silently fail - analytics should never break the app
+    console.warn('Page view tracking error:', error)
   }
 
   // Meta Pixel (already tracks PageView automatically)

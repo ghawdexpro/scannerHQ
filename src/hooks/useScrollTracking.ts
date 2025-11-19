@@ -10,7 +10,15 @@ export const useScrollTracking = () => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+
+      // Exit early if there's no scrollable content (prevents division by zero)
+      if (docHeight <= 0) {
+        return;
+      }
+
+      // Calculate scroll percentage with bounds clamping
+      const rawPercent = (scrollTop / docHeight) * 100;
+      const scrollPercent = Math.round(Math.min(100, Math.max(0, rawPercent)));
 
       // Track each threshold only once
       SCROLL_THRESHOLDS.forEach((threshold) => {

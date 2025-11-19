@@ -8,7 +8,7 @@ This document outlines the security measures, best practices, and procedures for
 
 **DO NOT** create public GitHub issues for security vulnerabilities.
 
-Instead, please report security issues to: **security@ghawdex.pro**
+Instead, please report security issues to: **admin@ghawdex.pro**
 
 Include:
 - Description of the vulnerability
@@ -349,8 +349,8 @@ npm run build                       # Check for build-time errors
 
 ## Security Contacts
 
-- **Security Email**: security@ghawdex.pro
-- **Development Team**: tech@ghawdex.pro
+- **Security Email**: admin@ghawdex.pro
+- **Development Team**: admin@ghawdex.pro
 - **Emergency**: [Phone number]
 
 ## Version History
