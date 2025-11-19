@@ -236,17 +236,6 @@ function AnalyzeContent() {
                 </p>
                 <p className="text-xs sm:text-sm text-gray-600 mt-2">usable area</p>
               </div>
-
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">Carbon Offset</h3>
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {Math.round(analysisData.analysis.carbonOffsetYearly / 1000)} tons
-                </p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2">CO₂ per year</p>
-              </div>
             </motion.div>
 
             {/* Satellite Image */}

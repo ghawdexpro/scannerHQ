@@ -145,7 +145,6 @@ export const calculateSolarConfiguration = (solarPotential: SolarPotential) => {
     yearlyGeneration,
     roofArea: solarPotential.wholeRoofStats.areaMeters2,
     maxSunshineHours: solarPotential.maxSunshineHoursPerYear,
-    carbonOffsetYearly: (yearlyGeneration * solarPotential.carbonOffsetFactorKgPerMwh) / 1000,
     withGrant,
     withoutGrant,
     roofSegments: solarPotential.roofSegmentStats.map(segment => ({

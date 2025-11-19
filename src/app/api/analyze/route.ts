@@ -78,7 +78,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
           yearlyGeneration: aiPotential.yearlyGeneration,
           roofArea: roofAnalysis.roofArea,
           maxSunshineHours: 3000, // Malta average
-          carbonOffsetYearly: aiPotential.co2Offset * 1000, // Convert to kg
           withGrant: {
             installationCost: aiPotential.systemSize * 1500,
             grantAmount: Math.min(aiPotential.systemSize * 1500 * 0.3, 2400),
