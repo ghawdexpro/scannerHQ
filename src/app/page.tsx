@@ -7,6 +7,7 @@ import { Sun, MapPin, Calculator, Clock, Shield, Zap } from 'lucide-react'
 import InteractiveMapInput from '@/components/address-input/InteractiveMapInput'
 import { MALTA_CONFIG, APP_CONFIG } from '@/config/constants'
 import { useAuth } from '@/context/AuthContext'
+import { trackAnalysisRequest } from '@/lib/analytics/tracking'
 
 export default function Home() {
   const router = useRouter()
@@ -15,6 +16,9 @@ export default function Home() {
 
   const handleAddressSelect = (address: string, coordinates: { lat: number; lng: number }) => {
     setIsAnalyzing(true)
+
+    // Track analysis request
+    trackAnalysisRequest(address)
 
     // TODO: Re-enable authentication check when Google/Apple OAuth is implemented
     // Navigate directly to analyze page (auth disabled for development)
