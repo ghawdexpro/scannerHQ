@@ -22,7 +22,6 @@ function AnalyzeContent() {
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [analysisData, setAnalysisData] = useState<AnalyzeResponse | null>(null)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
-  const [imageError, setImageError] = useState(false)
 
   const address = searchParams.get('address')
   const lat = searchParams.get('lat')
@@ -311,8 +310,8 @@ function AnalyzeContent() {
               </div>
             </motion.div>
 
-            {/* Satellite Image */}
-            {mapsApiKey && (
+            {/* Satellite View Map */}
+            {mapsApiKey && lat && lng && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -320,24 +319,14 @@ function AnalyzeContent() {
                 className="max-w-4xl mx-auto mb-8 sm:mb-12"
               >
                 <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden">
-                  {!imageError ? (
-                    <img
-                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=20&size=800x400&maptype=satellite&key=${mapsApiKey}`}
-                      alt="Satellite view of property"
-                      className="w-full h-48 sm:h-64 md:h-96 object-cover"
-                      loading="lazy"
-                      width="800"
-                      height="400"
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <div className="w-full h-48 sm:h-64 md:h-96 flex items-center justify-center bg-gray-900">
-                      <div className="text-center text-gray-500">
-                        <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Satellite image unavailable</p>
-                      </div>
-                    </div>
-                  )}
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/view?key=${mapsApiKey}&center=${lat},${lng}&zoom=20&maptype=satellite`}
+                    className="w-full h-48 sm:h-64 md:h-96"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
                 </div>
               </motion.div>
             )}
