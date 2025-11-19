@@ -10,9 +10,9 @@ export const MALTA_CONFIG = {
   NO_GRANT_TARIFF: 0.15, // Without grant
   TARIFF_GUARANTEE_YEARS: 20, // Years guaranteed
 
-  // Grant configuration
-  MAX_GRANT_AMOUNT: 2400, // EUR
-  GRANT_PERCENTAGE: 0.3, // 30% of installation cost
+  // Grant configuration (2025 Malta scheme)
+  MAX_GRANT_AMOUNT: 2500, // EUR (50% of costs up to €2,500)
+  GRANT_PERCENTAGE: 0.5, // 50% of installation cost
 
   // System specifications
   PANEL_WATTAGE: 400, // Watts per panel

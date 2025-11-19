@@ -132,15 +132,22 @@ export const calculateSolarConfiguration = (solarPotential: SolarPotential) => {
     return null
   }
 
-  const systemSize = (bestConfig.panelsCount * PANEL_WATTAGE) / 1000 // kW
-  const yearlyGeneration = bestConfig.yearlyEnergyDcKwh * SYSTEM_EFFICIENCY
+  // Business rule: Always cap at 15 kWp
+  const MAX_SYSTEM_SIZE = 15 // kWp
+  const calculatedSystemSize = (bestConfig.panelsCount * PANEL_WATTAGE) / 1000 // kW
+  const systemSize = Math.min(calculatedSystemSize, MAX_SYSTEM_SIZE)
+  const panelsCount = Math.floor((systemSize * 1000) / PANEL_WATTAGE) // Recalculate panel count based on cap
+
+  // Recalculate yearly generation proportionally to capped system
+  const generationRatio = systemSize / calculatedSystemSize
+  const yearlyGeneration = bestConfig.yearlyEnergyDcKwh * SYSTEM_EFFICIENCY * generationRatio
 
   // Calculate financial metrics
   const withGrant = calculateFinancials(systemSize, yearlyGeneration, true)
   const withoutGrant = calculateFinancials(systemSize, yearlyGeneration, false)
 
   return {
-    panelsCount: bestConfig.panelsCount,
+    panelsCount,
     systemSize,
     yearlyGeneration,
     roofArea: solarPotential.wholeRoofStats.areaMeters2,
@@ -163,8 +170,8 @@ export const calculateFinancials = (
   withGrant: boolean
 ) => {
   const INSTALLATION_COST_PER_KW = 1500 // EUR per kW (estimated)
-  const MALTA_GRANT_MAX = 2400 // EUR
-  const GRANT_PERCENTAGE = 0.3 // 30%
+  const MALTA_GRANT_MAX = 2500 // EUR (2025 scheme)
+  const GRANT_PERCENTAGE = 0.5 // 50% of installation cost
   const FEED_IN_TARIFF = withGrant ? 0.105 : 0.15 // EUR per kWh
   const PANEL_DEGRADATION = 0.005 // 0.5% per year
   const YEARS = 20

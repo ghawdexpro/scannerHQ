@@ -141,6 +141,7 @@ export const calculateAISolarPotential = (roofAnalysis: RoofAnalysis) => {
   const PANEL_WATTAGE = 400 // W
   const MALTA_SOLAR_IRRADIANCE = 5.2 // kWh/m²/day
   const SYSTEM_EFFICIENCY = 0.80
+  const MAX_SYSTEM_SIZE = 15 // kWp - Business rule
 
   // Orientation factors
   const orientationFactors = {
@@ -153,7 +154,9 @@ export const calculateAISolarPotential = (roofAnalysis: RoofAnalysis) => {
   }
 
   const orientationFactor = orientationFactors[roofAnalysis.orientation]
-  const systemSize = (roofAnalysis.panelPlacement.maxPanels * PANEL_WATTAGE) / 1000 // kW
+  const calculatedSystemSize = (roofAnalysis.panelPlacement.maxPanels * PANEL_WATTAGE) / 1000 // kW
+  const systemSize = Math.min(calculatedSystemSize, MAX_SYSTEM_SIZE) // Cap at 15 kWp
+  const panelCount = Math.floor((systemSize * 1000) / PANEL_WATTAGE) // Recalculate based on cap
 
   const yearlyGeneration =
     systemSize *
@@ -164,7 +167,7 @@ export const calculateAISolarPotential = (roofAnalysis: RoofAnalysis) => {
 
   return {
     systemSize,
-    panelCount: roofAnalysis.panelPlacement.maxPanels,
+    panelCount,
     yearlyGeneration,
     monthlyAverage: yearlyGeneration / 12,
     dailyAverage: yearlyGeneration / 365,
