@@ -118,8 +118,8 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sun className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sun className="w-7 h-7 sm:w-8 sm:h-8 text-red-600" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2">AI-Powered Analysis</h3>
               <p className="text-gray-600">
@@ -133,8 +133,8 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-center"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-7 h-7 sm:w-8 sm:h-8 text-amber-600" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2">100% Malta Coverage</h3>
               <p className="text-sm sm:text-base text-gray-600">
@@ -148,8 +148,8 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-center"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2">20-Year Guarantee</h3>
               <p className="text-sm sm:text-base text-gray-600">
@@ -164,7 +164,7 @@ export default function Home() {
       {/* ROI Section */}
       <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 sm:p-8 md:p-12 text-white">
+          <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-2xl p-6 sm:p-8 md:p-12 text-white">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-center">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">
@@ -225,7 +225,7 @@ export default function Home() {
           </p>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-700 transition-colors active:scale-95 min-h-12 min-w-44"
+            className="bg-red-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-red-700 transition-colors active:scale-95 min-h-12 min-w-44"
           >
             Get Your Free Analysis Now
           </button>
