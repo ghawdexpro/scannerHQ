@@ -481,9 +481,102 @@ function AnalyzeContent() {
 
                   {/* Side-by-Side Comparison */}
                   <div className="bg-gray-800/50 border border-gray-700 rounded-2xl shadow-lg p-6 sm:p-8 mb-8 backdrop-blur-sm">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">
-                      Financial Breakdown Comparison
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2 text-white">
+                      Choose Your Income Strategy
                     </h3>
+                    <p className="text-sm sm:text-base text-gray-400 mb-6">
+                      Both options generate excellent returns - choose based on your situation
+                    </p>
+
+                    {/* Strategy Comparison Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      {/* WITH GRANT - Lower Risk Strategy */}
+                      <div className="bg-red-900/20 border border-red-500/40 rounded-xl p-6 space-y-4">
+                        <div className="text-center mb-4">
+                          <h4 className="text-lg font-bold text-red-400 mb-2">Lower Risk Strategy</h4>
+                          <p className="text-xs text-gray-400">Start cheaper, earn sooner</p>
+                        </div>
+                        <div className="space-y-3 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Your Investment:</span>
+                            <span className="text-xl font-bold text-white">€{analysisData.analysis.withGrant.upfrontCost.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-green-400">
+                            <span>Government Grant:</span>
+                            <span className="font-semibold">-€{analysisData.analysis.withGrant.grantAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-3 border-t border-gray-700">
+                            <span className="text-gray-400">Income Rate:</span>
+                            <span className="text-lg font-bold text-red-400">€{analysisData.analysis.withGrant.feedInTariff}/kWh</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Annual Income:</span>
+                            <span className="font-semibold text-white">€{Math.round(analysisData.analysis.withGrant.yearlyRevenue).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Breakeven:</span>
+                            <span className="font-semibold text-white">{analysisData.analysis.withGrant.roiYears} years</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-3 border-t border-gray-700">
+                            <span className="text-gray-300 font-semibold">20-Year Total:</span>
+                            <span className="text-2xl font-bold text-red-400">€{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="bg-gray-900/60 rounded-lg p-3 mt-4">
+                          <p className="text-xs text-gray-400 text-center">
+                            ✓ Best if you want lower upfront cost<br/>
+                            ✓ Faster return on investment
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* WITHOUT GRANT - Maximum Income Strategy */}
+                      <div className="bg-amber-900/20 border border-amber-500/40 rounded-xl p-6 space-y-4">
+                        <div className="text-center mb-4">
+                          <h4 className="text-lg font-bold text-amber-400 mb-2">Maximum Income Strategy</h4>
+                          <p className="text-xs text-gray-400">Invest more, earn more</p>
+                        </div>
+                        <div className="space-y-3 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Your Investment:</span>
+                            <span className="text-xl font-bold text-white">€{analysisData.analysis.withoutGrant.upfrontCost.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-600">
+                            <span>Government Grant:</span>
+                            <span className="font-semibold">€0</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-3 border-t border-gray-700">
+                            <span className="text-gray-400">Income Rate:</span>
+                            <span className="text-lg font-bold text-amber-400">€{analysisData.analysis.withoutGrant.feedInTariff}/kWh</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Annual Income:</span>
+                            <span className="font-semibold text-white">€{Math.round(analysisData.analysis.withoutGrant.yearlyRevenue).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Breakeven:</span>
+                            <span className="font-semibold text-white">{analysisData.analysis.withoutGrant.roiYears} years</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-3 border-t border-gray-700">
+                            <span className="text-gray-300 font-semibold">20-Year Total:</span>
+                            <span className="text-2xl font-bold text-amber-400">€{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="bg-gray-900/60 rounded-lg p-3 mt-4">
+                          <p className="text-xs text-gray-400 text-center">
+                            ✓ Best if you can afford upfront cost<br/>
+                            ✓ 43% higher income rate (€0.15 vs €0.105)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detailed Comparison Table - Keep existing for those who want details */}
+                    <details className="mt-6">
+                      <summary className="text-sm text-gray-400 cursor-pointer hover:text-white transition-colors">
+                        View detailed comparison table →
+                      </summary>
+                    <div className="mt-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Metric Labels */}
                       <div className="text-xs sm:text-sm font-medium text-gray-400 space-y-3 sm:space-y-4">
@@ -552,6 +645,8 @@ function AnalyzeContent() {
                         </div>
                       </div>
                     </div>
+                  </div>
+                    </details>
                   </div>
 
                   {/* System Specifications (Compact) */}
