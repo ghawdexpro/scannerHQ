@@ -30,25 +30,12 @@ function AnalyzeContent() {
   // Access environment variable properly in client component
   const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
-  // Check authentication
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      console.log('[ANALYZE] User not authenticated, redirecting to login')
-      router.push('/auth/login')
-    }
-  }, [authLoading, isAuthenticated, router])
+  // TODO: Re-enable authentication when Google/Apple OAuth is implemented
+  // Authentication check disabled for development
 
   useEffect(() => {
     const performAnalysis = async () => {
-      // Wait for auth check to complete
-      if (authLoading) {
-        return
-      }
-
-      // Redirect to login if not authenticated
-      if (!isAuthenticated) {
-        return
-      }
+      // TODO: Re-enable auth check when OAuth is implemented
 
       if (!address || !lat || !lng) {
         setAnalysisError('Invalid parameters')
