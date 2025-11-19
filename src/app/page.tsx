@@ -34,7 +34,7 @@ export default function Home() {
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6">
                 Solar Power for Malta & Gozo
-                <span className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"> in 30 Seconds</span>
+                <span className="text-red-500"> in 30 Seconds</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-6 sm:mb-8">
                 Get instant solar analysis, government grant calculations, and a professional quote within 3 hours.
@@ -75,7 +75,7 @@ export default function Home() {
             >
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6 shadow-lg hover:shadow-red-500/20 hover:border-red-500/50 transition-all">
                 <div className="flex items-start mb-2">
-                  <Calculator className="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-1 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+                  <Calculator className="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-1" />
                   <span className="font-semibold text-sm sm:text-base text-white">Grant Calculator</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-400 ml-9">
@@ -84,7 +84,7 @@ export default function Home() {
               </div>
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6 shadow-lg hover:shadow-amber-500/20 hover:border-amber-500/50 transition-all">
                 <div className="flex items-start mb-2">
-                  <Clock className="w-6 h-6 text-amber-500 mr-3 flex-shrink-0 mt-1 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+                  <Clock className="w-6 h-6 text-amber-500 mr-3 flex-shrink-0 mt-1" />
                   <span className="font-semibold text-sm sm:text-base text-white">3-Hour Quote</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-400 ml-9">
@@ -93,7 +93,7 @@ export default function Home() {
               </div>
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6 shadow-lg hover:shadow-yellow-500/20 hover:border-yellow-500/50 transition-all sm:col-span-2 lg:col-span-1">
                 <div className="flex items-start mb-2">
-                  <Zap className="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0 mt-1 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
+                  <Zap className="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0 mt-1" />
                   <span className="font-semibold text-sm sm:text-base text-white">Feed-in Tariff</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-400 ml-9">
@@ -119,7 +119,7 @@ export default function Home() {
               className="text-center"
             >
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-500/20 border border-red-500/30 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
-                <Sun className="w-7 h-7 sm:w-8 sm:h-8 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                <Sun className="w-7 h-7 sm:w-8 sm:h-8 text-red-500" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">AI-Powered Analysis</h3>
               <p className="text-gray-400">
@@ -134,7 +134,7 @@ export default function Home() {
               className="text-center"
             >
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-amber-500/20 border border-amber-500/30 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-                <MapPin className="w-7 h-7 sm:w-8 sm:h-8 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                <MapPin className="w-7 h-7 sm:w-8 sm:h-8 text-amber-500" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">100% Malta Coverage</h3>
               <p className="text-sm sm:text-base text-gray-400">
@@ -149,7 +149,7 @@ export default function Home() {
               className="text-center"
             >
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-500/20 border border-orange-500/30 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
-                <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">20-Year Guarantee</h3>
               <p className="text-sm sm:text-base text-gray-400">

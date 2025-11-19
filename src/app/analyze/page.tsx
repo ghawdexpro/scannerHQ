@@ -136,7 +136,7 @@ function AnalyzeContent() {
             className="max-w-2xl mx-auto mb-12"
           >
             <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 flex gap-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-              <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+              <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-white mb-2">Analysis Failed</h3>
                 <p className="text-gray-300 mb-4">{analysisError}</p>
@@ -159,7 +159,7 @@ function AnalyzeContent() {
             className="max-w-2xl mx-auto mb-12"
           >
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg p-12 text-center backdrop-blur-sm">
-              <Loader2 className="w-16 h-16 text-red-500 animate-spin mx-auto mb-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
+              <Loader2 className="w-16 h-16 text-red-500 animate-spin mx-auto mb-4" />
               <h2 className="text-2xl font-semibold text-white mb-2">
                 Analyzing Your Property
               </h2>
@@ -206,7 +206,7 @@ function AnalyzeContent() {
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-yellow-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-300">System Size</h3>
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]" />
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-white">
                   {analysisData.analysis.systemSize.toFixed(1)} kW
@@ -219,7 +219,7 @@ function AnalyzeContent() {
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-orange-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-300">Annual Generation</h3>
-                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0 drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-white">
                   {Math.round(analysisData.analysis.yearlyGeneration).toLocaleString()} kWh
@@ -230,7 +230,7 @@ function AnalyzeContent() {
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-amber-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-300">Roof Area</h3>
-                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" />
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-white">
                   {analysisData.analysis.roofArea.toFixed(0)} m²
@@ -300,8 +300,8 @@ function AnalyzeContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                       {/* Total 20-Year Savings */}
                       <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-red-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-red-500/30 transition-all">
-                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]" />
-                        <p className="text-3xl sm:text-4xl font-bold text-red-500 mb-2 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-red-500 mb-2">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-300">Total 20-Year Savings</p>
@@ -310,8 +310,8 @@ function AnalyzeContent() {
 
                       {/* Breakeven Time */}
                       <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-amber-500/30 transition-all">
-                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
-                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
+                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2">
                           {analysisData.analysis.withGrant.roiYears}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-300">Years to Breakeven</p>
@@ -320,8 +320,8 @@ function AnalyzeContent() {
 
                       {/* Government Grant */}
                       <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-amber-500/30 transition-all">
-                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
-                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
+                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2">
                           €{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-300">Government Grant</p>
@@ -455,7 +455,7 @@ function AnalyzeContent() {
                         <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg text-gray-300">
                           {analysisData.analysis.withGrant.roiYears} years
                         </div>
-                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-red-400 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-red-400">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </div>
                       </div>
@@ -483,7 +483,7 @@ function AnalyzeContent() {
                         <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg text-gray-300">
                           {analysisData.analysis.withoutGrant.roiYears} years
                         </div>
-                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-amber-400">
                           €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings).toLocaleString()}
                         </div>
                       </div>
