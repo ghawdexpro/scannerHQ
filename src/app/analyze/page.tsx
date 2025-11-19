@@ -292,7 +292,7 @@ function AnalyzeContent() {
                   className="max-w-6xl mx-auto mb-12"
                 >
                   {/* Hero Metrics - Big Savings Numbers */}
-                  <div className="bg-gradient-to-br from-red-50 via-amber-50 to-yellow-50 rounded-2xl shadow-2xl p-6 sm:p-8 mb-8">
+                  <div className="bg-gradient-to-br from-red-50 via-amber-50 to-orange-50 rounded-2xl shadow-2xl p-6 sm:p-8 mb-8">
                     <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6 sm:mb-8">
                       💰 Your Potential Solar Savings
                     </h2>
