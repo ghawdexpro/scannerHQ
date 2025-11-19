@@ -121,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
             {
               success: false,
               error: 'SOLAR_API_ERROR',
-              message: `Solar analysis unavailable: ${apiError}`,
+              message: `Solar analysis unavailable. Google Solar API: ${apiError}. AI Fallback: ${aiError.message || aiError}`,
               timestamp: new Date().toISOString()
             },
             { status: 503 }

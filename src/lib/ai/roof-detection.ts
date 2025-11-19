@@ -28,19 +28,34 @@ export const analyzeRoofWithAI = async (
   lat: number,
   lng: number
 ): Promise<RoofAnalysis> => {
-  // Get satellite image
-  const imageUrl = getStaticMapUrl(lat, lng, {
-    zoom: 20,
-    maptype: 'satellite',
-    size: '640x640',
-    scale: 2
-  })
+  try {
+    console.log('[AI] Starting AI roof analysis for coordinates:', { lat, lng })
 
-  // For MVP, we'll use a simplified estimation
-  // In production, this would call a real AI model (TensorFlow.js, Roboflow, etc.)
-  const analysis = await performSimplifiedAnalysis(lat, lng, imageUrl)
+    // Get satellite image
+    const imageUrl = getStaticMapUrl(lat, lng, {
+      zoom: 20,
+      maptype: 'satellite',
+      size: '640x640',
+      scale: 2
+    })
 
-  return analysis
+    console.log('[AI] Generated static map URL:', imageUrl)
+
+    // For MVP, we'll use a simplified estimation
+    // In production, this would call a real AI model (TensorFlow.js, Roboflow, etc.)
+    const analysis = await performSimplifiedAnalysis(lat, lng, imageUrl)
+
+    console.log('[AI] AI analysis completed successfully:', {
+      roofArea: analysis.roofArea,
+      usableArea: analysis.usableArea,
+      maxPanels: analysis.panelPlacement.maxPanels
+    })
+
+    return analysis
+  } catch (error) {
+    console.error('[AI] Error in analyzeRoofWithAI:', error)
+    throw error
+  }
 }
 
 // Simplified analysis for MVP

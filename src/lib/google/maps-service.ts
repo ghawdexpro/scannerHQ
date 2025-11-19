@@ -137,7 +137,8 @@ export const getStaticMapUrl = (
     size,
     maptype,
     scale: scale.toString(),
-    key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!
+    // Use NEXT_PUBLIC key for client, fallback to server-side key for API routes
+    key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ''
   })
 
   return `${baseUrl}?${params.toString()}`
