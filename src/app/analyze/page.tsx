@@ -514,7 +514,6 @@ function AnalyzeContent() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
             </motion.div>
 
             {/* CTA / Quote Request Form */}
