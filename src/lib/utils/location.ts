@@ -1,14 +1,15 @@
-import { GOZO_BOUNDS, MALTA_BOUNDS } from '@/config/constants'
+import { MALTA_CONFIG } from '@/config/constants'
 
 /**
  * Check if coordinates are within Gozo bounds
  */
 export function isInGozo(lat: number, lng: number): boolean {
+  const { north, south, east, west } = MALTA_CONFIG.GOZO_BOUNDS
   return (
-    lat >= GOZO_BOUNDS.south &&
-    lat <= GOZO_BOUNDS.north &&
-    lng >= GOZO_BOUNDS.west &&
-    lng <= GOZO_BOUNDS.east
+    lat >= south &&
+    lat <= north &&
+    lng >= west &&
+    lng <= east
   )
 }
 
@@ -17,11 +18,12 @@ export function isInGozo(lat: number, lng: number): boolean {
  * (excludes Gozo even though it's technically part of Malta)
  */
 export function isInMalta(lat: number, lng: number): boolean {
+  const { north, south, east, west } = MALTA_CONFIG.MALTA_BOUNDS
   return (
-    lat >= MALTA_BOUNDS.south &&
-    lat <= MALTA_BOUNDS.north &&
-    lng >= MALTA_BOUNDS.west &&
-    lng <= MALTA_BOUNDS.east &&
+    lat >= south &&
+    lat <= north &&
+    lng >= west &&
+    lng <= east &&
     !isInGozo(lat, lng) // Exclude Gozo from Malta main island
   )
 }
