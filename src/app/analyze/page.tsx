@@ -89,13 +89,13 @@ function AnalyzeContent() {
 
   if (!address || !lat || !lng) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Parameters</h1>
-          <p className="text-gray-600 mb-6">Please start from the home page to analyze a location.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Invalid Parameters</h1>
+          <p className="text-gray-400 mb-6">Please start from the home page to analyze a location.</p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-full font-semibold hover:from-red-500 hover:to-red-600 transition-all shadow-[0_0_20px_rgba(239,68,68,0.4)] border border-red-500/50"
           >
             <Home className="w-5 h-5" />
             Go to Home
@@ -106,7 +106,7 @@ function AnalyzeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black">
       <div className="container mx-auto px-4 py-6 sm:py-8 md:py-16">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
@@ -115,11 +115,11 @@ function AnalyzeContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4">
               Solar Analysis Results
             </h1>
-            <div className="flex items-center justify-center gap-2 text-gray-600 text-sm sm:text-base">
-              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <div className="flex items-center justify-center gap-2 text-gray-300 text-sm sm:text-base">
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-red-500" />
               <p className="break-words">{address}</p>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
@@ -135,14 +135,14 @@ function AnalyzeContent() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl mx-auto mb-12"
           >
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex gap-4">
-              <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 flex gap-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+              <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
               <div>
-                <h3 className="font-semibold text-red-900 mb-2">Analysis Failed</h3>
-                <p className="text-red-700 mb-4">{analysisError}</p>
+                <h3 className="font-semibold text-white mb-2">Analysis Failed</h3>
+                <p className="text-gray-300 mb-4">{analysisError}</p>
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg font-semibold hover:from-red-500 hover:to-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)] border border-red-500/50"
                 >
                   Try Again
                 </Link>
@@ -158,18 +158,18 @@ function AnalyzeContent() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl mx-auto mb-12"
           >
-            <div className="bg-white rounded-lg shadow-lg p-12 text-center">
-              <Loader2 className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg p-12 text-center backdrop-blur-sm">
+              <Loader2 className="w-16 h-16 text-red-500 animate-spin mx-auto mb-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
+              <h2 className="text-2xl font-semibold text-white mb-2">
                 Analyzing Your Property
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-400">
                 We're calculating the solar potential for your location...
               </p>
               <div className="mt-6 flex justify-center gap-1">
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce shadow-[0_0_8px_rgba(239,68,68,0.6)]" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce shadow-[0_0_8px_rgba(245,158,11,0.6)]" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce shadow-[0_0_8px_rgba(249,115,22,0.6)]" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </motion.div>
@@ -184,10 +184,10 @@ function AnalyzeContent() {
               animate={{ opacity: 1, y: 0 }}
               className="max-w-2xl mx-auto mb-8"
             >
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${
                 analysisData.analysisType === 'google_solar'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-blue-100 text-blue-800'
+                  ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                  : 'bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
               }`}>
                 <CheckCircle className="w-4 h-4" />
                 {analysisData.analysisType === 'google_solar'
@@ -203,39 +203,39 @@ function AnalyzeContent() {
               transition={{ delay: 0.2 }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 max-w-6xl mx-auto"
             >
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-yellow-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">System Size</h3>
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-300">System Size</h3>
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]" />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-white">
                   {analysisData.analysis.systemSize.toFixed(1)} kW
                 </p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                <p className="text-xs sm:text-sm text-gray-400 mt-2">
                   {analysisData.analysis.panelsCount} panels
                 </p>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-orange-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">Annual Generation</h3>
-                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-300">Annual Generation</h3>
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0 drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-white">
                   {Math.round(analysisData.analysis.yearlyGeneration).toLocaleString()} kWh
                 </p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2">per year</p>
+                <p className="text-xs sm:text-sm text-gray-400 mt-2">per year</p>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-amber-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-700">Roof Area</h3>
-                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
+                  <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-300">Roof Area</h3>
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-white">
                   {analysisData.analysis.roofArea.toFixed(0)} m²
                 </p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2">usable area</p>
+                <p className="text-xs sm:text-sm text-gray-400 mt-2">usable area</p>
               </div>
             </motion.div>
 
@@ -247,7 +247,7 @@ function AnalyzeContent() {
                 transition={{ delay: 0.3 }}
                 className="max-w-4xl mx-auto mb-8 sm:mb-12"
               >
-                <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden">
                   {!imageError ? (
                     <img
                       src={`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=20&size=800x400&maptype=satellite&key=${mapsApiKey}`}
@@ -259,7 +259,7 @@ function AnalyzeContent() {
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="w-full h-48 sm:h-64 md:h-96 flex items-center justify-center bg-gray-100">
+                    <div className="w-full h-48 sm:h-64 md:h-96 flex items-center justify-center bg-gray-900">
                       <div className="text-center text-gray-500">
                         <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Satellite image unavailable</p>
@@ -292,51 +292,51 @@ function AnalyzeContent() {
                   className="max-w-6xl mx-auto mb-12"
                 >
                   {/* Hero Metrics - Big Savings Numbers */}
-                  <div className="bg-gradient-to-br from-red-50 via-amber-50 to-orange-50 rounded-2xl shadow-2xl p-6 sm:p-8 mb-8">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6 sm:mb-8">
+                  <div className="bg-gradient-to-br from-red-900/30 via-orange-900/20 to-amber-900/30 border border-red-500/30 rounded-2xl shadow-[0_0_40px_rgba(239,68,68,0.2)] p-6 sm:p-8 mb-8 backdrop-blur-sm">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-6 sm:mb-8">
                       💰 Your Potential Solar Savings
                     </h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                       {/* Total 20-Year Savings */}
-                      <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
-                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-red-600 mx-auto mb-3" />
-                        <p className="text-3xl sm:text-4xl font-bold text-red-600 mb-2">
+                      <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-red-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-red-500/30 transition-all">
+                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]" />
+                        <p className="text-3xl sm:text-4xl font-bold text-red-500 mb-2 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-600">Total 20-Year Savings</p>
+                        <p className="text-xs sm:text-sm text-gray-300">Total 20-Year Savings</p>
                         <p className="text-xs text-gray-500 mt-1">(with government grant)</p>
                       </div>
 
                       {/* Breakeven Time */}
-                      <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
-                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-amber-600 mx-auto mb-3" />
-                        <p className="text-3xl sm:text-4xl font-bold text-amber-600 mb-2">
+                      <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-amber-500/30 transition-all">
+                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
+                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
                           {analysisData.analysis.withGrant.roiYears}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-600">Years to Breakeven</p>
+                        <p className="text-xs sm:text-sm text-gray-300">Years to Breakeven</p>
                         <p className="text-xs text-gray-500 mt-1">Recover your investment</p>
                       </div>
 
                       {/* Government Grant */}
-                      <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
-                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3" />
-                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2">
+                      <div className="text-center bg-gray-800/80 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-amber-500/30 transition-all">
+                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
+                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
                           €{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-600">Government Grant</p>
+                        <p className="text-xs sm:text-sm text-gray-300">Government Grant</p>
                         <p className="text-xs text-gray-500 mt-1">30% of installation cost</p>
                       </div>
                     </div>
 
                     {/* Monthly Averages */}
-                    <div className="text-center text-sm text-gray-600 bg-white/60 rounded-lg p-3 sm:p-4">
-                      <span className="font-semibold text-red-700">
+                    <div className="text-center text-sm text-gray-400 bg-black/30 border border-gray-700 rounded-lg p-3 sm:p-4">
+                      <span className="font-semibold text-red-400">
                         €{Math.round(analysisData.analysis.withGrant.twentyYearSavings / 20 / 12)}/month
                       </span>
                       {' '}with grant
                       <span className="mx-2">|</span>
-                      <span className="font-semibold text-amber-700">
+                      <span className="font-semibold text-amber-400">
                         €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings / 20 / 12)}/month
                       </span>
                       {' '}without grant
@@ -345,8 +345,8 @@ function AnalyzeContent() {
 
                   {/* Dual-Line Chart */}
                   {combinedProjections.length > 0 && (
-                    <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
-                      <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-2xl shadow-lg p-6 sm:p-8 mb-8 backdrop-blur-sm">
+                      <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">
                         Cumulative Savings Over 20 Years
                       </h3>
                       <ResponsiveContainer width="100%" height={350}>
@@ -416,13 +416,13 @@ function AnalyzeContent() {
                   )}
 
                   {/* Side-by-Side Comparison */}
-                  <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">
+                  <div className="bg-gray-800/50 border border-gray-700 rounded-2xl shadow-lg p-6 sm:p-8 mb-8 backdrop-blur-sm">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">
                       Financial Breakdown Comparison
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Metric Labels */}
-                      <div className="text-xs sm:text-sm font-medium text-gray-600 space-y-3 sm:space-y-4">
+                      <div className="text-xs sm:text-sm font-medium text-gray-400 space-y-3 sm:space-y-4">
                         <div className="h-8 sm:h-10 flex items-center">Installation Cost</div>
                         <div className="h-8 sm:h-10 flex items-center">Government Grant</div>
                         <div className="h-8 sm:h-10 flex items-center">Your Investment</div>
@@ -433,57 +433,57 @@ function AnalyzeContent() {
                       </div>
 
                       {/* WITH GRANT */}
-                      <div className="bg-red-50 rounded-lg p-3 sm:p-4 border-2 border-red-600 space-y-3 sm:space-y-4">
-                        <div className="text-center font-bold text-red-700 mb-2 text-sm sm:text-base">
+                      <div className="bg-red-900/20 rounded-lg p-3 sm:p-4 border-2 border-red-500/50 space-y-3 sm:space-y-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                        <div className="text-center font-bold text-red-400 mb-2 text-sm sm:text-base">
                           ✓ WITH GRANT
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-white">
                           €{analysisData.analysis.withGrant.installationCost.toLocaleString()}
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-red-600">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-red-400">
                           -€{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold text-white">
                           €{analysisData.analysis.withGrant.upfrontCost.toLocaleString()}
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center border-t pt-2 sm:pt-4 text-sm sm:text-lg">
+                        <div className="h-8 sm:h-10 flex items-center justify-center border-t border-gray-700 pt-2 sm:pt-4 text-sm sm:text-lg text-gray-300">
                           €{analysisData.analysis.withGrant.feedInTariff}/kWh
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg text-gray-300">
                           €{Math.round(analysisData.analysis.withGrant.yearlyRevenue).toLocaleString()}/yr
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg text-gray-300">
                           {analysisData.analysis.withGrant.roiYears} years
                         </div>
-                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-red-600">
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-red-400 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </div>
                       </div>
 
                       {/* WITHOUT GRANT */}
-                      <div className="bg-amber-50 rounded-lg p-3 sm:p-4 border border-amber-400 space-y-3 sm:space-y-4">
-                        <div className="text-center font-bold text-amber-700 mb-2 text-sm sm:text-base">
+                      <div className="bg-amber-900/20 rounded-lg p-3 sm:p-4 border border-amber-500/40 space-y-3 sm:space-y-4 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                        <div className="text-center font-bold text-amber-400 mb-2 text-sm sm:text-base">
                           WITHOUT GRANT
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-white">
                           €{analysisData.analysis.withoutGrant.installationCost.toLocaleString()}
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-gray-400">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-gray-600">
                           €0
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold text-white">
                           €{analysisData.analysis.withoutGrant.upfrontCost.toLocaleString()}
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center border-t pt-2 sm:pt-4 text-sm sm:text-lg">
+                        <div className="h-8 sm:h-10 flex items-center justify-center border-t border-gray-700 pt-2 sm:pt-4 text-sm sm:text-lg text-gray-300">
                           €{analysisData.analysis.withoutGrant.feedInTariff}/kWh
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg text-gray-300">
                           €{Math.round(analysisData.analysis.withoutGrant.yearlyRevenue).toLocaleString()}/yr
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg text-gray-300">
                           {analysisData.analysis.withoutGrant.roiYears} years
                         </div>
-                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-amber-500">
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
                           €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings).toLocaleString()}
                         </div>
                       </div>
