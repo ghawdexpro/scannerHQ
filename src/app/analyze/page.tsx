@@ -39,9 +39,6 @@ function AnalyzeContent() {
     }))
   }, [analysisData])
 
-  // Access environment variable properly in client component
-  const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-
   // TODO: Re-enable authentication when Google/Apple OAuth is implemented
   // Authentication check disabled for development
 
@@ -291,27 +288,6 @@ function AnalyzeContent() {
                 <p className="text-xs sm:text-sm text-gray-400 mt-2">usable area</p>
               </div>
             </motion.div>
-
-            {/* Satellite View Map */}
-            {mapsApiKey && lat && lng && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="max-w-4xl mx-auto mb-8 sm:mb-12"
-              >
-                <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden">
-                  <iframe
-                    src={`https://www.google.com/maps/embed/v1/view?key=${mapsApiKey}&center=${lat},${lng}&zoom=20&maptype=satellite`}
-                    className="w-full h-48 sm:h-64 md:h-96"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              </motion.div>
-            )}
 
             {/* Financial Results - Stunning Single-Page Layout */}
             <motion.div
