@@ -79,9 +79,9 @@ function VerifyContent() {
       setSuccess(true)
       console.log('[VERIFY] OTP bypassed (dev mode)')
 
-      // Redirect to home page
+      // Redirect to analysis page to see the flow
       setTimeout(() => {
-        router.push('/')
+        router.push('/analyze')
       }, 1500)
 
       /* DISABLED - Will re-enable with OAuth
