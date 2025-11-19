@@ -249,30 +249,12 @@ function AnalyzeContent() {
         {/* Analysis Complete */}
         {analysisComplete && analysisData && (
           <>
-            {/* Analysis Type Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-2xl mx-auto mb-8"
-            >
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${
-                analysisData.analysisType === 'google_solar'
-                  ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                  : 'bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
-              }`}>
-                <CheckCircle className="w-4 h-4" />
-                {analysisData.analysisType === 'google_solar'
-                  ? 'Google Solar API Analysis'
-                  : 'AI-Powered Roof Detection'}
-              </div>
-            </motion.div>
-
             {/* Key Metrics */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 max-w-6xl mx-auto"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 max-w-4xl mx-auto"
             >
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg p-4 sm:p-6 hover:border-yellow-500/50 transition-all">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
