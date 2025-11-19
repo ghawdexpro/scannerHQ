@@ -22,7 +22,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Hero Section */}
       <section className="relative">
         <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16 lg:py-24">
@@ -34,7 +34,7 @@ export default function Home() {
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Solar Power for Malta & Gozo
-                <span className="text-blue-600"> in 30 Seconds</span>
+                <span className="text-red-600"> in 30 Seconds</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8">
                 Get instant solar analysis, government grant calculations, and a professional quote within 3 hours.
@@ -75,7 +75,7 @@ export default function Home() {
             >
               <div className="bg-white rounded-lg p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
                 <div className="flex items-start mb-2">
-                  <Calculator className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0 mt-1" />
+                  <Calculator className="w-6 h-6 text-red-600 mr-3 flex-shrink-0 mt-1" />
                   <span className="font-semibold text-sm sm:text-base">Grant Calculator</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600 ml-9">
@@ -84,7 +84,7 @@ export default function Home() {
               </div>
               <div className="bg-white rounded-lg p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
                 <div className="flex items-start mb-2">
-                  <Clock className="w-6 h-6 text-green-600 mr-3 flex-shrink-0 mt-1" />
+                  <Clock className="w-6 h-6 text-amber-600 mr-3 flex-shrink-0 mt-1" />
                   <span className="font-semibold text-sm sm:text-base">3-Hour Quote</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600 ml-9">

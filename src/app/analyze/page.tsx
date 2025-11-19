@@ -292,7 +292,7 @@ function AnalyzeContent() {
                   className="max-w-6xl mx-auto mb-12"
                 >
                   {/* Hero Metrics - Big Savings Numbers */}
-                  <div className="bg-gradient-to-br from-green-50 via-blue-50 to-green-50 rounded-2xl shadow-2xl p-6 sm:p-8 mb-8">
+                  <div className="bg-gradient-to-br from-red-50 via-amber-50 to-yellow-50 rounded-2xl shadow-2xl p-6 sm:p-8 mb-8">
                     <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6 sm:mb-8">
                       💰 Your Potential Solar Savings
                     </h2>
@@ -300,8 +300,8 @@ function AnalyzeContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                       {/* Total 20-Year Savings */}
                       <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
-                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-green-600 mx-auto mb-3" />
-                        <p className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
+                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-red-600 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-red-600 mb-2">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-600">Total 20-Year Savings</p>
@@ -320,8 +320,8 @@ function AnalyzeContent() {
 
                       {/* Government Grant */}
                       <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
-                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600 mx-auto mb-3" />
-                        <p className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
+                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-amber-500 mb-2">
                           €{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-600">Government Grant</p>
@@ -331,12 +331,12 @@ function AnalyzeContent() {
 
                     {/* Monthly Averages */}
                     <div className="text-center text-sm text-gray-600 bg-white/60 rounded-lg p-3 sm:p-4">
-                      <span className="font-semibold text-green-700">
+                      <span className="font-semibold text-red-700">
                         €{Math.round(analysisData.analysis.withGrant.twentyYearSavings / 20 / 12)}/month
                       </span>
                       {' '}with grant
                       <span className="mx-2">|</span>
-                      <span className="font-semibold text-blue-700">
+                      <span className="font-semibold text-amber-700">
                         €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings / 20 / 12)}/month
                       </span>
                       {' '}without grant
@@ -394,7 +394,7 @@ function AnalyzeContent() {
                           <Line
                             type="monotone"
                             dataKey="withGrantSavings"
-                            stroke="#10b981"
+                            stroke="#DC2626"
                             strokeWidth={3}
                             dot={false}
                             activeDot={{ r: 6 }}
@@ -403,7 +403,7 @@ function AnalyzeContent() {
                           <Line
                             type="monotone"
                             dataKey="withoutGrantSavings"
-                            stroke="#3b82f6"
+                            stroke="#F59E0B"
                             strokeWidth={2}
                             dot={false}
                             activeDot={{ r: 6 }}
@@ -433,14 +433,14 @@ function AnalyzeContent() {
                       </div>
 
                       {/* WITH GRANT */}
-                      <div className="bg-green-50 rounded-lg p-3 sm:p-4 border-2 border-green-500 space-y-3 sm:space-y-4">
-                        <div className="text-center font-bold text-green-700 mb-2 text-sm sm:text-base">
+                      <div className="bg-red-50 rounded-lg p-3 sm:p-4 border-2 border-red-600 space-y-3 sm:space-y-4">
+                        <div className="text-center font-bold text-red-700 mb-2 text-sm sm:text-base">
                           ✓ WITH GRANT
                         </div>
                         <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl">
                           €{analysisData.analysis.withGrant.installationCost.toLocaleString()}
                         </div>
-                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-green-600">
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-red-600">
                           -€{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
                         </div>
                         <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold">
@@ -455,14 +455,14 @@ function AnalyzeContent() {
                         <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
                           {analysisData.analysis.withGrant.roiYears} years
                         </div>
-                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-green-600">
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-red-600">
                           €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
                         </div>
                       </div>
 
                       {/* WITHOUT GRANT */}
-                      <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-300 space-y-3 sm:space-y-4">
-                        <div className="text-center font-bold text-blue-700 mb-2 text-sm sm:text-base">
+                      <div className="bg-amber-50 rounded-lg p-3 sm:p-4 border border-amber-400 space-y-3 sm:space-y-4">
+                        <div className="text-center font-bold text-amber-700 mb-2 text-sm sm:text-base">
                           WITHOUT GRANT
                         </div>
                         <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl">
@@ -483,7 +483,7 @@ function AnalyzeContent() {
                         <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
                           {analysisData.analysis.withoutGrant.roiYears} years
                         </div>
-                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-blue-600">
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-amber-500">
                           €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings).toLocaleString()}
                         </div>
                       </div>
