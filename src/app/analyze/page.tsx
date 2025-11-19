@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Loader2, MapPin, Sun, Zap, Calculator, TrendingUp, Home, DollarSign, AlertCircle, CheckCircle } from 'lucide-react'
+import { Loader2, MapPin, Sun, Zap, Calculator, TrendingUp, Home, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { AnalyzeResponse, AnalyzeErrorResponse } from '@/types/api'
@@ -270,96 +270,255 @@ function AnalyzeContent() {
               </motion.div>
             )}
 
-            {/* Financial Scenarios - Tabs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="max-w-4xl mx-auto mb-12"
-            >
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="grid grid-cols-2 border-b">
-                  <button className="px-6 py-4 font-semibold text-blue-600 border-b-2 border-blue-600 bg-blue-50">
-                    <DollarSign className="w-5 h-5 inline mr-2" />
-                    With Government Grant
-                  </button>
-                  <button className="px-6 py-4 font-semibold text-gray-700 hover:bg-gray-50">
-                    <DollarSign className="w-5 h-5 inline mr-2" />
-                    Without Grant
-                  </button>
-                </div>
+            {/* Financial Results - Stunning Single-Page Layout */}
+            {(() => {
+              // Combine both scenarios for dual-line chart
+              const combinedProjections = useMemo(() => {
+                if (!analysisData.analysis.withGrant.projections || !analysisData.analysis.withoutGrant.projections) {
+                  return []
+                }
+                return analysisData.analysis.withGrant.projections.map((item, index) => ({
+                  year: item.year,
+                  withGrantSavings: item.cumulativeSavings,
+                  withoutGrantSavings: analysisData.analysis.withoutGrant.projections[index]?.cumulativeSavings || 0
+                }))
+              }, [analysisData])
 
-                <div className="p-8">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Installation Cost</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        €{analysisData.analysis.withGrant.installationCost.toLocaleString()}
-                      </p>
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="max-w-6xl mx-auto mb-12"
+                >
+                  {/* Hero Metrics - Big Savings Numbers */}
+                  <div className="bg-gradient-to-br from-green-50 via-blue-50 to-green-50 rounded-2xl shadow-2xl p-6 sm:p-8 mb-8">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6 sm:mb-8">
+                      💰 Your Potential Solar Savings
+                    </h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                      {/* Total 20-Year Savings */}
+                      <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
+                        <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-green-600 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
+                          €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600">Total 20-Year Savings</p>
+                        <p className="text-xs text-gray-500 mt-1">(with government grant)</p>
+                      </div>
+
+                      {/* Breakeven Time */}
+                      <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
+                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-amber-600 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-amber-600 mb-2">
+                          {analysisData.analysis.withGrant.roiYears}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600">Years to Breakeven</p>
+                        <p className="text-xs text-gray-500 mt-1">Recover your investment</p>
+                      </div>
+
+                      {/* Government Grant */}
+                      <div className="text-center bg-white/80 rounded-xl p-4 sm:p-6 shadow-lg">
+                        <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600 mx-auto mb-3" />
+                        <p className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
+                          €{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600">Government Grant</p>
+                        <p className="text-xs text-gray-500 mt-1">30% of installation cost</p>
+                      </div>
                     </div>
 
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Government Grant</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        €{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Your Investment</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        €{analysisData.analysis.withGrant.upfrontCost.toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Feed-in Tariff</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        €{analysisData.analysis.withGrant.feedInTariff.toFixed(3)}/kWh
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Annual Revenue</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        €{Math.round(analysisData.analysis.withGrant.yearlyRevenue).toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">20-Year Savings</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
-                      </p>
+                    {/* Monthly Averages */}
+                    <div className="text-center text-sm text-gray-600 bg-white/60 rounded-lg p-3 sm:p-4">
+                      <span className="font-semibold text-green-700">
+                        €{Math.round(analysisData.analysis.withGrant.twentyYearSavings / 20 / 12)}/month
+                      </span>
+                      {' '}with grant
+                      <span className="mx-2">|</span>
+                      <span className="font-semibold text-blue-700">
+                        €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings / 20 / 12)}/month
+                      </span>
+                      {' '}without grant
                     </div>
                   </div>
 
-                  {/* Chart */}
-                  {analysisData.analysis.withGrant.projections && analysisData.analysis.withGrant.projections.length > 0 && (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart
-                        data={analysisData.analysis.withGrant.projections}
-                        margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="year" />
-                        <YAxis />
-                        <Tooltip formatter={(value) => `€${Number(value).toLocaleString()}`} />
-                        <Legend />
-                        <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" />
-                        <Line
-                          type="monotone"
-                          dataKey="cumulativeSavings"
-                          stroke="#059669"
-                          dot={false}
-                          name="Cumulative Savings"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  {/* Dual-Line Chart */}
+                  {combinedProjections.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
+                      <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">
+                        Cumulative Savings Over 20 Years
+                      </h3>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <LineChart
+                          data={combinedProjections}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <XAxis
+                            dataKey="year"
+                            label={{ value: 'Year', position: 'insideBottom', offset: -10 }}
+                            stroke="#6b7280"
+                          />
+                          <YAxis
+                            stroke="#6b7280"
+                            tickFormatter={(value) => `€${(value/1000).toFixed(0)}k`}
+                          />
+                          <Tooltip
+                            formatter={(value) => [`€${Number(value).toLocaleString()}`, '']}
+                            labelFormatter={(label) => `Year ${label}`}
+                            contentStyle={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              borderRadius: '8px',
+                              border: '1px solid #e5e7eb'
+                            }}
+                          />
+                          <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                          <ReferenceLine
+                            y={0}
+                            stroke="#9ca3af"
+                            strokeDasharray="5 5"
+                            label={{ value: 'Breakeven', position: 'right', fill: '#6b7280' }}
+                          />
+                          <ReferenceLine
+                            x={analysisData.analysis.withGrant.roiYears}
+                            stroke="#f59e0b"
+                            strokeDasharray="3 3"
+                            label={{
+                              value: `${analysisData.analysis.withGrant.roiYears}y`,
+                              position: 'top',
+                              fill: '#f59e0b',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="withGrantSavings"
+                            stroke="#10b981"
+                            strokeWidth={3}
+                            dot={false}
+                            activeDot={{ r: 6 }}
+                            name="With Grant (€0.105/kWh)"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="withoutGrantSavings"
+                            stroke="#3b82f6"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6 }}
+                            name="Without Grant (€0.15/kWh)"
+                            strokeDasharray="5 5"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   )}
-                </div>
-              </div>
-            </motion.div>
+
+                  {/* Side-by-Side Comparison */}
+                  <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">
+                      Financial Breakdown Comparison
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Metric Labels */}
+                      <div className="text-xs sm:text-sm font-medium text-gray-600 space-y-3 sm:space-y-4">
+                        <div className="h-8 sm:h-10 flex items-center">Installation Cost</div>
+                        <div className="h-8 sm:h-10 flex items-center">Government Grant</div>
+                        <div className="h-8 sm:h-10 flex items-center">Your Investment</div>
+                        <div className="h-8 sm:h-10 flex items-center border-t pt-2 sm:pt-4">Feed-in Tariff</div>
+                        <div className="h-8 sm:h-10 flex items-center">Annual Revenue</div>
+                        <div className="h-8 sm:h-10 flex items-center">Breakeven Time</div>
+                        <div className="h-10 sm:h-12 flex items-center text-base sm:text-lg font-bold">20-Year Total</div>
+                      </div>
+
+                      {/* WITH GRANT */}
+                      <div className="bg-green-50 rounded-lg p-3 sm:p-4 border-2 border-green-500 space-y-3 sm:space-y-4">
+                        <div className="text-center font-bold text-green-700 mb-2 text-sm sm:text-base">
+                          ✓ WITH GRANT
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl">
+                          €{analysisData.analysis.withGrant.installationCost.toLocaleString()}
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-green-600">
+                          -€{analysisData.analysis.withGrant.grantAmount.toLocaleString()}
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold">
+                          €{analysisData.analysis.withGrant.upfrontCost.toLocaleString()}
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center border-t pt-2 sm:pt-4 text-sm sm:text-lg">
+                          €{analysisData.analysis.withGrant.feedInTariff}/kWh
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                          €{Math.round(analysisData.analysis.withGrant.yearlyRevenue).toLocaleString()}/yr
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                          {analysisData.analysis.withGrant.roiYears} years
+                        </div>
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-green-600">
+                          €{Math.round(analysisData.analysis.withGrant.twentyYearSavings).toLocaleString()}
+                        </div>
+                      </div>
+
+                      {/* WITHOUT GRANT */}
+                      <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-300 space-y-3 sm:space-y-4">
+                        <div className="text-center font-bold text-blue-700 mb-2 text-sm sm:text-base">
+                          WITHOUT GRANT
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl">
+                          €{analysisData.analysis.withoutGrant.installationCost.toLocaleString()}
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl text-gray-400">
+                          €0
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-base sm:text-xl font-bold">
+                          €{analysisData.analysis.withoutGrant.upfrontCost.toLocaleString()}
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center border-t pt-2 sm:pt-4 text-sm sm:text-lg">
+                          €{analysisData.analysis.withoutGrant.feedInTariff}/kWh
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                          €{Math.round(analysisData.analysis.withoutGrant.yearlyRevenue).toLocaleString()}/yr
+                        </div>
+                        <div className="h-8 sm:h-10 flex items-center justify-center text-sm sm:text-lg">
+                          {analysisData.analysis.withoutGrant.roiYears} years
+                        </div>
+                        <div className="h-10 sm:h-12 flex items-center justify-center text-xl sm:text-2xl font-bold text-blue-600">
+                          €{Math.round(analysisData.analysis.withoutGrant.twentyYearSavings).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* System Specifications (Compact) */}
+                  <div className="bg-gray-50 rounded-xl p-4 sm:p-6">
+                    <h4 className="font-semibold text-gray-700 mb-3 text-sm sm:text-base">System Specifications</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Sun className="w-4 h-4 text-yellow-600" />
+                        <span>{analysisData.analysis.panelsCount} Panels × 400W</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-blue-600" />
+                        <span>{analysisData.analysis.systemSize.toFixed(1)} kWp System</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-green-600" />
+                        <span>{Math.round(analysisData.analysis.yearlyGeneration).toLocaleString()} kWh/year</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Home className="w-4 h-4 text-gray-600" />
+                        <span>{analysisData.analysis.roofArea} m² Roof</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sun className="w-4 h-4 text-orange-600" />
+                        <span>{analysisData.analysis.maxSunshineHours.toLocaleString()} hrs/year</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })()}
 
             {/* CTA / Quote Request Form */}
             <motion.div
