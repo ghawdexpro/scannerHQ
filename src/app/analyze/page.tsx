@@ -339,7 +339,7 @@ export default function AnalysisPage() {
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <MagneticButton
-                href="#contact"
+                href="/"
                 variant="primary"
                 trackingEvent="quote_request"
                 trackingLabel="Analysis Page CTA - Get Quote"
@@ -348,10 +348,10 @@ export default function AnalysisPage() {
               </MagneticButton>
 
               <MagneticButton
-                href="tel:+35679055156"
+                href="https://wa.me/35679055156?text=Hi%2C%20I%27d%20like%20to%20schedule%20a%20free%20solar%20consultation"
                 variant="secondary"
-                trackingEvent="call_button_click"
-                trackingLabel="Analysis Page CTA - Call"
+                trackingEvent="whatsapp_button_click"
+                trackingLabel="Analysis Page CTA - WhatsApp"
               >
                 Schedule Free Consultation
               </MagneticButton>
