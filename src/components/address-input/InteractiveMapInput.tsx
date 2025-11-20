@@ -31,9 +31,6 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   // Handle fullscreen transitions and orientation changes
   useEffect(() => {
     if (map && isFullscreen) {
-      // Reset idle flag when entering fullscreen to wait for map to settle
-      isMapIdleRef.current = false
-
       // Trigger resize on next tick to let DOM settle
       const timer = setTimeout(() => {
         // Trigger resize event to ensure map adjusts to new container size
@@ -190,18 +187,21 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
 
   // Handle map click with memoization
   const handleMapClick = useCallback(async (latLng: google.maps.LatLng, mapInstance: google.maps.Map) => {
+    // Extract coordinates immediately to prevent stale reference in deferred callback
+    const lat = latLng.lat()
+    const lng = latLng.lng()
+
     // If map is not idle yet (still settling from initialization/resize), wait for idle event
     if (!isMapIdleRef.current) {
-      console.log('Map not idle yet, deferring click...')
+      console.log('Map not idle yet, deferring click...', { lat, lng })
       google.maps.event.addListenerOnce(mapInstance, 'idle', () => {
-        console.log('Map now idle, processing deferred click')
-        handleMapClick(latLng, mapInstance)
+        console.log('Map now idle, processing deferred click', { lat, lng })
+        // Create new LatLng object from stored coordinates to process deferred click
+        const deferredLatLng = new google.maps.LatLng(lat, lng)
+        handleMapClick(deferredLatLng, mapInstance)
       })
       return
     }
-
-    const lat = latLng.lat()
-    const lng = latLng.lng()
 
     console.log('=== MAP CLICK DEBUG ===')
     console.log('Clicked coordinates:', { lat, lng })
