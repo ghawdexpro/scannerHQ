@@ -69,6 +69,8 @@ export interface SunlightHeatmapProps {
   onComplete: () => void
   isActive: boolean
   dataLayers?: DataLayersResponse
+  sharedMap?: google.maps.Map
+  isMapReady?: boolean
 }
 
 export interface Building3DViewProps {

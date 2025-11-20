@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { SolarVisualizationLoaderProps, ANIMATION_STAGES } from './types'
+import { loadLibrary } from '@/lib/google/maps-service'
 
 // Dynamically import animation components
 const HeightMapAnimation = dynamic(() => import('./HeightMapAnimation'), { ssr: false })
@@ -22,6 +23,9 @@ export default function SolarVisualizationLoader({
 }: SolarVisualizationLoaderProps) {
   const [currentStageIndex, setCurrentStageIndex] = useState(0)
   const [showSkipButton, setShowSkipButton] = useState(false)
+  const [sharedMap, setSharedMap] = useState<google.maps.Map | null>(null)
+  const [isMapReady, setIsMapReady] = useState(false)
+  const mapDivRef = useRef<HTMLDivElement>(null)
 
   const currentStage = ANIMATION_STAGES[currentStageIndex]
   const currentStageId = currentStage?.id as AnimationStageId
@@ -34,6 +38,42 @@ export default function SolarVisualizationLoader({
 
     return () => clearTimeout(timer)
   }, [])
+
+  // Initialize shared map once (after satellite stage)
+  useEffect(() => {
+    // Only initialize map after satellite stage completes
+    if (currentStageIndex < 1 || !mapDivRef.current || sharedMap) return
+
+    const initSharedMap = async () => {
+      try {
+        console.log('[LOADER] Initializing shared map...')
+        await loadLibrary('maps')
+
+        const map = new google.maps.Map(mapDivRef.current!, {
+          center: { lat: visualizationData.pinLocation.latitude, lng: visualizationData.pinLocation.longitude },
+          zoom: 20,
+          mapTypeId: 'satellite',
+          tilt: 0,
+          heading: 0,
+          disableDefaultUI: true,
+          zoomControl: false,
+          mapTypeControl: false,
+          scaleControl: false,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+        })
+
+        setSharedMap(map)
+        setIsMapReady(true)
+        console.log('[LOADER] Shared map initialized successfully')
+      } catch (error) {
+        console.error('[LOADER] Failed to initialize shared map:', error)
+      }
+    }
+
+    initSharedMap()
+  }, [currentStageIndex, visualizationData.pinLocation, sharedMap])
 
   // Handle stage completion
   const handleStageComplete = useCallback(() => {
@@ -113,50 +153,69 @@ export default function SolarVisualizationLoader({
       {/* Main visualization area */}
       <div className="relative z-0 flex-1 px-6 md:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
-          <AnimatePresence mode="wait">
-            {/* Stage 1: Satellite View Loading */}
-            {currentStageId === 'satellite' && (
+          {/* Persistent shared map container */}
+          {currentStageIndex >= 1 && (
+            <div className="glass-card p-6 relative">
+              <div
+                ref={mapDivRef}
+                className="aspect-video bg-gray-900 rounded-lg overflow-hidden"
+              />
+
+              {/* Overlay animations on top of shared map */}
+              <AnimatePresence mode="wait">
+                {/* Stage 2: Height Map (DSM) */}
+                {currentStageId === 'height_map' && (
+                  <HeightMapAnimation
+                    key="height_map"
+                    center={visualizationData.pinLocation}
+                    dataLayers={dataLayers}
+                    onComplete={handleStageComplete}
+                    isActive={true}
+                    sharedMap={sharedMap ?? undefined}
+                    isMapReady={isMapReady}
+                  />
+                )}
+
+                {/* Stage 3: Solar Flux (Irradiation) */}
+                {currentStageId === 'solar_flux' && (
+                  <SunlightHeatmap
+                    key="solar_flux"
+                    segments={visualizationData.roofSegments}
+                    center={visualizationData.pinLocation}
+                    dataLayers={dataLayers}
+                    onComplete={handleStageComplete}
+                    isActive={true}
+                    sharedMap={sharedMap ?? undefined}
+                    isMapReady={isMapReady}
+                  />
+                )}
+
+                {/* Stage 4: Shadow Pattern Analysis */}
+                {currentStageId === 'shadow_patterns' && (
+                  <ShadowPatternAnimation
+                    key="shadow_patterns"
+                    center={visualizationData.pinLocation}
+                    dataLayers={dataLayers}
+                    onComplete={handleStageComplete}
+                    isActive={true}
+                    sharedMap={sharedMap ?? undefined}
+                    isMapReady={isMapReady}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Stage 1: Satellite View Loading (before shared map) */}
+          {currentStageId === 'satellite' && (
+            <AnimatePresence mode="wait">
               <SatelliteLoading
                 key="satellite"
                 coordinates={coordinates}
                 onComplete={handleStageComplete}
               />
-            )}
-
-            {/* Stage 2: Height Map (DSM) */}
-            {currentStageId === 'height_map' && (
-              <HeightMapAnimation
-                key="height_map"
-                center={visualizationData.pinLocation}
-                dataLayers={dataLayers}
-                onComplete={handleStageComplete}
-                isActive={true}
-              />
-            )}
-
-            {/* Stage 3: Solar Flux (Irradiation) */}
-            {currentStageId === 'solar_flux' && (
-              <SunlightHeatmap
-                key="solar_flux"
-                segments={visualizationData.roofSegments}
-                center={visualizationData.pinLocation}
-                dataLayers={dataLayers}
-                onComplete={handleStageComplete}
-                isActive={true}
-              />
-            )}
-
-            {/* Stage 4: Shadow Pattern Analysis */}
-            {currentStageId === 'shadow_patterns' && (
-              <ShadowPatternAnimation
-                key="shadow_patterns"
-                center={visualizationData.pinLocation}
-                dataLayers={dataLayers}
-                onComplete={handleStageComplete}
-                isActive={true}
-              />
-            )}
-          </AnimatePresence>
+            </AnimatePresence>
+          )}
         </div>
       </div>
 

@@ -10,26 +10,44 @@ export interface ShadowPatternAnimationProps {
   dataLayers?: DataLayersResponse
   onComplete: () => void
   isActive: boolean
+  sharedMap?: google.maps.Map
+  isMapReady?: boolean
 }
 
 export default function ShadowPatternAnimation({
   center,
   dataLayers,
   onComplete,
-  isActive
+  isActive,
+  sharedMap,
+  isMapReady
 }: ShadowPatternAnimationProps) {
   const [currentHour, setCurrentHour] = useState(0)
   const [shadowsLoaded, setShadowsLoaded] = useState(false)
   const [overlayDataUrls, setOverlayDataUrls] = useState<string[]>([])
   const [bounds, setBounds] = useState<google.maps.LatLngBoundsLiteral | null>(null)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
-  const mapRef = useRef<google.maps.Map | null>(null)
+  const shouldCreateOwnMap = !sharedMap
+  const mapRef = useRef<google.maps.Map | null>(sharedMap || null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
 
-  // Initialize Google Map
+  // Initialize Google Map (or use shared map)
   useEffect(() => {
-    if (!isActive || !mapDivRef.current || mapRef.current) return
+    if (!isActive) return
+
+    // If using shared map, just mark as loaded when ready
+    if (!shouldCreateOwnMap) {
+      if (isMapReady && sharedMap) {
+        mapRef.current = sharedMap
+        setIsMapLoaded(true)
+        console.log('[SHADOWS] Using shared map')
+      }
+      return
+    }
+
+    // Create own map if not using shared map (backward compatibility)
+    if (!mapDivRef.current || mapRef.current) return
 
     const initMap = async () => {
       try {
@@ -61,7 +79,7 @@ export default function ShadowPatternAnimation({
     }
 
     initMap()
-  }, [isActive, center])
+  }, [isActive, center, shouldCreateOwnMap, sharedMap, isMapReady])
 
   // Load hourly shade layer
   useEffect(() => {
@@ -178,12 +196,12 @@ export default function ShadowPatternAnimation({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.1 }}
       transition={{ duration: 0.5 }}
-      className="glass-card p-6"
+      className={shouldCreateOwnMap ? "glass-card p-6" : "absolute inset-0 pointer-events-none"}
     >
       {/* Main visualization */}
-      <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Google Map */}
-        <div ref={mapDivRef} className="w-full h-full" />
+      <div className={shouldCreateOwnMap ? "relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6" : "relative w-full h-full"}>
+        {/* Google Map (only if creating own map) */}
+        {shouldCreateOwnMap && <div ref={mapDivRef} className="w-full h-full" />}
 
         {/* Hour indicator overlay */}
         {shadowsLoaded && (
@@ -219,6 +237,7 @@ export default function ShadowPatternAnimation({
       </div>
 
       {/* Hour timeline */}
+      {shouldCreateOwnMap && (
       <div className="flex items-center justify-center gap-4">
         {hourLabels.map((hour, index) => (
           <motion.div
@@ -241,6 +260,7 @@ export default function ShadowPatternAnimation({
           </motion.div>
         ))}
       </div>
+      )}
     </motion.div>
   )
 }

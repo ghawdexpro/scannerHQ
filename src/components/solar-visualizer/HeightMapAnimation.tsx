@@ -10,24 +10,42 @@ export interface HeightMapAnimationProps {
   dataLayers?: DataLayersResponse
   onComplete: () => void
   isActive: boolean
+  sharedMap?: google.maps.Map
+  isMapReady?: boolean
 }
 
 export default function HeightMapAnimation({
   center,
   dataLayers,
   onComplete,
-  isActive
+  isActive,
+  sharedMap,
+  isMapReady
 }: HeightMapAnimationProps) {
   const [heightDataLoaded, setHeightDataLoaded] = useState(false)
   const [heightStats, setHeightStats] = useState<{ min: number; max: number; avg: number } | null>(null)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
-  const mapRef = useRef<google.maps.Map | null>(null)
+  const shouldCreateOwnMap = !sharedMap
+  const mapRef = useRef<google.maps.Map | null>(sharedMap || null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
 
-  // Initialize Google Map
+  // Initialize Google Map (or use shared map)
   useEffect(() => {
-    if (!isActive || !mapDivRef.current || mapRef.current) return
+    if (!isActive) return
+
+    // If using shared map, just mark as loaded when ready
+    if (!shouldCreateOwnMap) {
+      if (isMapReady && sharedMap) {
+        mapRef.current = sharedMap
+        setIsMapLoaded(true)
+        console.log('[HEIGHT-MAP] Using shared map')
+      }
+      return
+    }
+
+    // Create own map if not using shared map (backward compatibility)
+    if (!mapDivRef.current || mapRef.current) return
 
     const initMap = async () => {
       try {
@@ -59,7 +77,7 @@ export default function HeightMapAnimation({
     }
 
     initMap()
-  }, [isActive, center])
+  }, [isActive, center, shouldCreateOwnMap, sharedMap, isMapReady])
 
   // Load DSM (Digital Surface Model) layer
   useEffect(() => {
@@ -177,12 +195,12 @@ export default function HeightMapAnimation({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.1 }}
       transition={{ duration: 0.5 }}
-      className="glass-card p-6"
+      className={shouldCreateOwnMap ? "glass-card p-6" : "absolute inset-0 pointer-events-none"}
     >
       {/* Main visualization */}
-      <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Google Map */}
-        <div ref={mapDivRef} className="w-full h-full" />
+      <div className={shouldCreateOwnMap ? "relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6" : "relative w-full h-full"}>
+        {/* Google Map (only if creating own map) */}
+        {shouldCreateOwnMap && <div ref={mapDivRef} className="w-full h-full" />}
 
         {/* Real data badge */}
         <motion.div
@@ -208,7 +226,7 @@ export default function HeightMapAnimation({
       </div>
 
       {/* Height statistics */}
-      {heightStats && (
+      {heightStats && shouldCreateOwnMap && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

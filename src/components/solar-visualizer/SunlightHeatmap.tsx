@@ -11,20 +11,36 @@ export default function SunlightHeatmap({
   center,
   onComplete,
   isActive,
-  dataLayers
+  dataLayers,
+  sharedMap,
+  isMapReady
 }: SunlightHeatmapProps & { dataLayers?: DataLayersResponse }) {
   const [heatmapOpacity, setHeatmapOpacity] = useState(0)
   const [showLegend, setShowLegend] = useState(false)
   const [fluxLoaded, setFluxLoaded] = useState(false)
   const [realDataStats, setRealDataStats] = useState<{ min: number; max: number; avg: number } | null>(null)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
-  const mapRef = useRef<google.maps.Map | null>(null)
+  const shouldCreateOwnMap = !sharedMap
+  const mapRef = useRef<google.maps.Map | null>(sharedMap || null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
 
-  // Initialize Google Map
+  // Initialize Google Map (or use shared map)
   useEffect(() => {
-    if (!isActive || !mapDivRef.current || mapRef.current) return
+    if (!isActive) return
+
+    // If using shared map, just mark as loaded when ready
+    if (!shouldCreateOwnMap) {
+      if (isMapReady && sharedMap) {
+        mapRef.current = sharedMap
+        setIsMapLoaded(true)
+        console.log('[HEATMAP] Using shared map')
+      }
+      return
+    }
+
+    // Create own map if not using shared map (backward compatibility)
+    if (!mapDivRef.current || mapRef.current) return
 
     const initMap = async () => {
       try {
@@ -56,7 +72,7 @@ export default function SunlightHeatmap({
     }
 
     initMap()
-  }, [isActive, center])
+  }, [isActive, center, shouldCreateOwnMap, sharedMap, isMapReady])
 
   // Load annual flux layer
   useEffect(() => {
@@ -173,12 +189,12 @@ export default function SunlightHeatmap({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.1 }}
       transition={{ duration: 0.5 }}
-      className="glass-card p-6"
+      className={shouldCreateOwnMap ? "glass-card p-6" : "absolute inset-0 pointer-events-none"}
     >
       {/* Main heatmap visualization */}
-      <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Google Map */}
-        <div ref={mapDivRef} className="w-full h-full" />
+      <div className={shouldCreateOwnMap ? "relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6" : "relative w-full h-full"}>
+        {/* Google Map (only if creating own map) */}
+        {shouldCreateOwnMap && <div ref={mapDivRef} className="w-full h-full" />}
 
         {/* Fallback: Simulated heatmap overlay (if no real data) */}
         {!dataLayers && (
@@ -308,7 +324,7 @@ export default function SunlightHeatmap({
       </div>
 
       {/* Legend */}
-      {showLegend && (
+      {showLegend && shouldCreateOwnMap && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
