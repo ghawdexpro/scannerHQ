@@ -139,7 +139,14 @@ export const getBuildingInsights = async (
       throw new Error('LOCATION_NOT_FOUND')
     }
     console.error('Solar API error:', error)
-    throw new Error('Failed to fetch solar insights')
+    console.error('Solar API error response:', error.response?.data)
+    console.error('Solar API error status:', error.response?.status)
+
+    const errorMessage = error.response?.data?.error?.message ||
+                         error.response?.data?.message ||
+                         error.message ||
+                         'Failed to fetch solar insights'
+    throw new Error(errorMessage)
   }
 }
 
