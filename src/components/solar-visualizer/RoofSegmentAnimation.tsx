@@ -16,6 +16,20 @@ export default function RoofSegmentAnimation({
   // Satellite map URL
   const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${center.latitude},${center.longitude}&zoom=20&size=1200x800&maptype=satellite&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
 
+  // Timeout fallback if image doesn't load
+  useEffect(() => {
+    if (!isActive) return
+
+    const timeout = setTimeout(() => {
+      if (!mapLoaded) {
+        console.warn('Map image failed to load, proceeding anyway')
+        setMapLoaded(true)
+      }
+    }, 3000) // Wait max 3 seconds for image
+
+    return () => clearTimeout(timeout)
+  }, [isActive, mapLoaded])
+
   useEffect(() => {
     if (!isActive || !mapLoaded) return
 
