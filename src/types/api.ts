@@ -58,7 +58,7 @@ export interface VisualizationData {
     latitude: number
     longitude: number
   }
-  imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
+  imageryQuality: 'HIGH' | 'MEDIUM' | 'BASE'
   roofSegments: Array<{
     id: string
     center: { latitude: number; longitude: number }
@@ -110,7 +110,7 @@ export interface AnalyzeResponse {
   }
   analysis: SolarAnalysisResult
   visualizationData?: VisualizationData | null
-  imageryQuality?: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
+  imageryQuality?: 'HIGH' | 'MEDIUM' | 'BASE'
   timestamp: string
   expiresAt: string
 }

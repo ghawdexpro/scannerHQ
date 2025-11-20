@@ -61,7 +61,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
     let analysisType: 'google_solar' | 'ai_fallback' = 'google_solar'
     let solarAnalysis: any = null
     let visualizationData: any = null
-    let imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE' | undefined
+    let imageryQuality: 'HIGH' | 'MEDIUM' | 'BASE' | undefined
 
     console.log(`[ANALYZE] Location type detected: ${locationType}`)
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
       console.log('[ANALYZE] Attempting Google Solar API')
 
       try {
-        const buildingInsights = await getBuildingInsights(lat, lng, 'LOW')
+        const buildingInsights = await getBuildingInsights(lat, lng, 'BASE')
         solarAnalysis = calculateSolarConfiguration(buildingInsights.solarPotential)
         imageryQuality = buildingInsights.imageryQuality
 

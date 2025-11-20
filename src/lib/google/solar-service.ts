@@ -84,7 +84,7 @@ export interface BuildingInsightsResponse {
     month: number
     day: number
   }
-  imageryQuality?: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
+  imageryQuality?: 'HIGH' | 'MEDIUM' | 'BASE'
   solarPotential: SolarPotential
 }
 
@@ -105,7 +105,7 @@ export interface DataLayersResponse {
   annualFluxUrl: string
   monthlyFluxUrl: string
   hourlyShadeUrls: string[]
-  imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
+  imageryQuality: 'HIGH' | 'MEDIUM' | 'BASE'
 }
 
 export interface GeoTiffOptions {
@@ -118,7 +118,7 @@ export interface GeoTiffOptions {
 export const getBuildingInsights = async (
   lat: number,
   lng: number,
-  requiredQuality: 'HIGH' | 'MEDIUM' | 'LOW' = 'HIGH'
+  requiredQuality: 'HIGH' | 'MEDIUM' | 'BASE' = 'HIGH'
 ): Promise<BuildingInsightsResponse> => {
   try {
     const response = await axios.get(
@@ -257,7 +257,7 @@ export const checkSolarApiAvailability = async (
   lng: number
 ): Promise<boolean> => {
   try {
-    await getBuildingInsights(lat, lng, 'LOW')
+    await getBuildingInsights(lat, lng, 'BASE')
     return true
   } catch (error: any) {
     if (error.message === 'LOCATION_NOT_FOUND') {
@@ -273,7 +273,7 @@ export const getDataLayers = async (
   lat: number,
   lng: number,
   radiusMeters: number = 100,
-  requiredQuality: 'HIGH' | 'MEDIUM' | 'LOW' = 'HIGH'
+  requiredQuality: 'HIGH' | 'MEDIUM' | 'BASE' = 'HIGH'
 ): Promise<DataLayersResponse> => {
   try {
     const response = await axios.get(
@@ -372,7 +372,7 @@ export const extractVisualizationData = async (
   try {
     console.log(`[SOLAR-SERVICE] Fetching data layers for pin location: (${pinLat}, ${pinLng})`)
 
-    const dataLayersResponse = await getDataLayers(pinLat, pinLng, 50, 'LOW')
+    const dataLayersResponse = await getDataLayers(pinLat, pinLng, 50, 'BASE')
 
     // hourlyShadeUrls contains shadow data for each hour of the year
     // Array length: 365 days * 24 hours = 8760 entries
