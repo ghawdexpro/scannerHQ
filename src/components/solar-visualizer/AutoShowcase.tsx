@@ -189,6 +189,14 @@ const AutoShowcase = forwardRef<AutoShowcaseHandle, AutoShowcaseProps>(
         setCurrentDayOfYear(step.dayOfYear)
       }
 
+      // **CRITICAL FIX:** Tell ShowcaseVisualization which layer to load via window function
+      console.log('[AutoShowcase] 🔧 Setting desired layer via window.showcaseSetDesiredLayer:', step.layerId)
+      if (typeof window !== 'undefined' && window.showcaseSetDesiredLayer) {
+        window.showcaseSetDesiredLayer(step.layerId, step.dayOfYear)
+      } else {
+        console.error('[AutoShowcase] ❌ window.showcaseSetDesiredLayer not available!')
+      }
+
       // Reset overlay visibility
       if (window.showcaseToggleOverlay) {
         window.showcaseToggleOverlay(true)
@@ -199,7 +207,8 @@ const AutoShowcase = forwardRef<AutoShowcaseHandle, AutoShowcaseProps>(
       startLoadingPhase()
 
       // Poll for layer ready, then start display phase
-      pollForLayerReady(() => {
+      // Now poll for the actual desired layer, not the stale currentLayerId
+      pollForLayerReady(step.layerId, () => {
         startDisplayPhase(step, stepIndex)
       })
     }
@@ -215,25 +224,39 @@ const AutoShowcase = forwardRef<AutoShowcaseHandle, AutoShowcaseProps>(
       }, 50)
     }
 
-    const pollForLayerReady = (callback: () => void) => {
+    const pollForLayerReady = (expectedLayerId: ShowcaseStep['layerId'], callback: () => void) => {
       let checks = 0
       const maxChecks = 60 // 6 seconds timeout
       let callbackCalled = false
 
-      console.log('[AutoShowcase] Starting to poll for layer ready')
+      console.log('[AutoShowcase] ========== POLLING START ==========')
+      console.log('[AutoShowcase] Waiting for layer:', expectedLayerId)
+      console.log('[AutoShowcase] Max checks:', maxChecks, '(timeout:', maxChecks * 100, 'ms)')
+
       loadCheckIntervalRef.current = setInterval(() => {
         if (callbackCalled) return
 
         checks++
         const overlaysReady = window.areSolarOverlaysReady?.() || false
-        const correctLayerLoaded = window.getCurrentLayerId?.() === currentLayerId
+        const currentLoadedLayer = window.getCurrentLayerId?.()
+        const correctLayerLoaded = currentLoadedLayer === expectedLayerId
 
         console.log(
-          `[AutoShowcase] Check ${checks}, overlays ready: ${overlaysReady}, correct layer: ${correctLayerLoaded} (expected: ${currentLayerId})`
+          `[AutoShowcase] Poll check ${checks}/${maxChecks}:`,
+          JSON.stringify({
+            overlaysReady,
+            currentLoadedLayer,
+            expectedLayer: expectedLayerId,
+            correctLayerLoaded,
+            areSolarOverlaysReadyExists: !!window.areSolarOverlaysReady,
+            getCurrentLayerIdExists: !!window.getCurrentLayerId,
+            solarDataLayersReady: window.solarDataLayersReady
+          }, null, 2)
         )
 
         if (overlaysReady && correctLayerLoaded) {
-          console.log('[AutoShowcase] Layer and overlays ready, starting display phase')
+          console.log('[AutoShowcase] ✅ READY - Layer and overlays ready, starting display phase')
+          console.log('[AutoShowcase] ========== POLLING END (SUCCESS) ==========')
           callbackCalled = true
           if (loadCheckIntervalRef.current) {
             clearInterval(loadCheckIntervalRef.current)
@@ -241,7 +264,14 @@ const AutoShowcase = forwardRef<AutoShowcaseHandle, AutoShowcaseProps>(
           }
           callback()
         } else if (checks >= maxChecks) {
-          console.warn('[AutoShowcase] Loading timeout, proceeding anyway')
+          console.warn('[AutoShowcase] ⏱️ TIMEOUT - Proceeding anyway after', checks, 'checks')
+          console.warn('[AutoShowcase] Final state:', {
+            overlaysReady,
+            correctLayerLoaded,
+            currentLoadedLayer,
+            expectedLayer: expectedLayerId
+          })
+          console.log('[AutoShowcase] ========== POLLING END (TIMEOUT) ==========')
           callbackCalled = true
           if (loadCheckIntervalRef.current) {
             clearInterval(loadCheckIntervalRef.current)

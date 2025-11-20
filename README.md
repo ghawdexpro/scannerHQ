@@ -61,7 +61,7 @@ npm run dev
 - **AI/ML:** TensorFlow.js, Google Cloud Vision
 - **Maps:** Google Maps API, Google Solar API
 - **Database:** PostgreSQL (Supabase)
-- **Deployment:** Vercel
+- **Deployment:** Railway
 - **Email:** SendGrid
 - **Analytics:** Google Analytics 4
 
@@ -186,20 +186,20 @@ Fully responsive design optimized for:
 
 ## 🌐 Deployment
 
-### Vercel Deployment
+### Railway Deployment
 
-1. Connect repository to Vercel
-2. Configure environment variables
+1. Connect repository to Railway
+2. Configure environment variables in Railway dashboard
 3. Deploy with:
 ```bash
-vercel --prod
+railway up
 ```
 
 ### Custom Domain Setup
 
-1. Add domain in Vercel dashboard
-2. Update DNS records
-3. Configure SSL certificate
+1. Add domain in Railway dashboard
+2. Update DNS records to point to Railway
+3. SSL certificate is automatically configured
 
 ## 📝 License
 

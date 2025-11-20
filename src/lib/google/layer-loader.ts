@@ -52,22 +52,56 @@ export async function getLayer(
     showcaseMode?: boolean // For hourlyShade - show only daylight hours (16 frames vs 24)
   }
 ): Promise<Layer> {
+  console.log('[LayerLoader] ========== getLayer() CALL ==========')
+  console.log('[LayerLoader] Requested layer:', layerId)
+  console.log('[LayerLoader] Options:', options)
+  console.log('[LayerLoader] URLs available:', {
+    hasDsmUrl: !!urls.dsmUrl,
+    hasRgbUrl: !!urls.rgbUrl,
+    hasMaskUrl: !!urls.maskUrl,
+    hasAnnualFluxUrl: !!urls.annualFluxUrl,
+    hasMonthlyFluxUrl: !!urls.monthlyFluxUrl,
+    hourlyShadeUrlsCount: urls.hourlyShadeUrls?.length || 0,
+  })
 
-  switch (layerId) {
-    case 'mask':
-      return await loadMaskLayer(urls)
-    case 'dsm':
-      return await loadDsmLayer(urls)
-    case 'rgb':
-      return await loadRgbLayer(urls)
-    case 'annualFlux':
-      return await loadAnnualFluxLayer(urls)
-    case 'monthlyFlux':
-      return await loadMonthlyFluxLayer(urls)
-    case 'hourlyShade':
-      return await loadHourlyShadeLayer(urls, options?.dayOfYear, options?.showcaseMode)
-    default:
-      throw new Error(`Unknown layer: ${layerId}`)
+  try {
+    let result: Layer
+    switch (layerId) {
+      case 'mask':
+        console.log('[LayerLoader] Loading mask layer...')
+        result = await loadMaskLayer(urls)
+        break
+      case 'dsm':
+        console.log('[LayerLoader] Loading DSM layer...')
+        result = await loadDsmLayer(urls)
+        break
+      case 'rgb':
+        console.log('[LayerLoader] Loading RGB layer...')
+        result = await loadRgbLayer(urls)
+        break
+      case 'annualFlux':
+        console.log('[LayerLoader] Loading annual flux layer...')
+        result = await loadAnnualFluxLayer(urls)
+        break
+      case 'monthlyFlux':
+        console.log('[LayerLoader] Loading monthly flux layer...')
+        result = await loadMonthlyFluxLayer(urls)
+        break
+      case 'hourlyShade':
+        console.log('[LayerLoader] Loading hourly shade layer...')
+        result = await loadHourlyShadeLayer(urls, options?.dayOfYear, options?.showcaseMode)
+        break
+      default:
+        throw new Error(`Unknown layer: ${layerId}`)
+    }
+    console.log('[LayerLoader] ✅ Layer loaded successfully:', result.id, 'with', result.canvases.length, 'canvases')
+    console.log('[LayerLoader] =========================================')
+    return result
+  } catch (error) {
+    console.error('[LayerLoader] ❌ Error loading layer:', layerId)
+    console.error('[LayerLoader] Error details:', error)
+    console.error('[LayerLoader] =========================================')
+    throw error
   }
 }
 

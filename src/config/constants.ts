@@ -94,9 +94,9 @@ export const APP_CONFIG = {
 
   // Company info
   COMPANY_NAME: 'Ghawdex Engineering',
-  COMPANY_PHONE: '+356 2156 0000', // Replace with actual
-  COMPANY_ADDRESS: 'Malta', // Replace with actual
-  COMPANY_WEBSITE: 'https://ghawdex.pro',
+  COMPANY_PHONE: '+356 7905 5156',
+  COMPANY_ADDRESS: 'Xewkija Industrial Zone, Malta',
+  COMPANY_WEBSITE: 'https://www.ghawdex.pro',
 }
 
 // Validation rules

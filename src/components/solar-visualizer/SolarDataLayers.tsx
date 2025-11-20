@@ -48,7 +48,7 @@ export default function SolarDataLayers({
       }
 
       window.getCurrentLayerId = () => {
-        return currentLayer?.id || selectedLayerId
+        return currentLayer?.id || 'none'
       }
     }
 
@@ -150,42 +150,78 @@ export default function SolarDataLayers({
   }, [currentLayer, showcaseMode])
 
   const loadSelectedLayer = async () => {
-    if (!dataLayersResponse) return
+    if (!dataLayersResponse) {
+      console.error('[SolarDataLayers] ❌ Cannot load layer - dataLayersResponse is undefined')
+      return
+    }
 
     try {
-      console.log('[SolarDataLayers] Fetching layer:', selectedLayerId)
+      console.log('[SolarDataLayers] ========== LAYER LOAD START ==========')
+      console.log('[SolarDataLayers] Loading layer:', selectedLayerId)
+      console.log('[SolarDataLayers] Options:', {
+        dayOfYear: selectedDayOfYear,
+        showcaseMode,
+      })
+      console.log('[SolarDataLayers] dataLayersResponse structure:', {
+        hasDsmUrl: !!dataLayersResponse.dsmUrl,
+        hasRgbUrl: !!dataLayersResponse.rgbUrl,
+        hasMaskUrl: !!dataLayersResponse.maskUrl,
+        hasAnnualFluxUrl: !!dataLayersResponse.annualFluxUrl,
+        hasMonthlyFluxUrl: !!dataLayersResponse.monthlyFluxUrl,
+        hourlyShadeUrlsCount: dataLayersResponse.hourlyShadeUrls?.length || 0,
+      })
 
       const layer = await getLayer(selectedLayerId as LayerId, dataLayersResponse, {
         dayOfYear: selectedDayOfYear,
         showcaseMode,
       })
 
-      console.log('[SolarDataLayers] Layer loaded:', layer.id, 'canvases:', layer.canvases.length)
+      console.log('[SolarDataLayers] ✅ Layer loaded from getLayer():', {
+        id: layer.id,
+        canvasesCount: layer.canvases.length,
+        bounds: layer.bounds,
+        hasPalette: !!layer.palette
+      })
 
       // Clear old overlays
+      console.log('[SolarDataLayers] Clearing old overlays...')
       clearOverlays()
 
       // Create new overlays
-      const newOverlays = layer.canvases.map((canvas) => {
-        return new google.maps.GroundOverlay(canvas.toDataURL(), layer.bounds, {
+      console.log('[SolarDataLayers] Creating', layer.canvases.length, 'new overlay(s)...')
+      const newOverlays = layer.canvases.map((canvas, i) => {
+        const dataUrl = canvas.toDataURL()
+        console.log(`[SolarDataLayers] Canvas ${i} dataURL length:`, dataUrl.length)
+        return new google.maps.GroundOverlay(dataUrl, layer.bounds, {
           opacity: 0.7,
         })
       })
 
+      console.log('[SolarDataLayers] Setting overlays in state...')
       setOverlays(newOverlays)
       overlaysRef.current = newOverlays
       setCurrentLayer(layer)
 
       // Reset animation state
       if (layer.id === 'monthlyFlux') {
+        console.log('[SolarDataLayers] Resetting month to 0')
         setCurrentMonth(0)
       } else if (layer.id === 'hourlyShade') {
+        console.log('[SolarDataLayers] Resetting hour to 0')
         setCurrentHour(0)
       }
 
-      console.log('[SolarDataLayers] Created', newOverlays.length, 'overlays for layer:', layer.id)
+      console.log('[SolarDataLayers] ✅ Layer load complete:', layer.id, 'with', newOverlays.length, 'overlays')
+      console.log('[SolarDataLayers] ========== LAYER LOAD END ==========')
     } catch (error) {
-      console.error('[SolarDataLayers] Error loading layer:', error)
+      console.error('[SolarDataLayers] ========== LAYER LOAD ERROR ==========')
+      console.error('[SolarDataLayers] ❌ Error loading layer:', selectedLayerId)
+      console.error('[SolarDataLayers] Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        error
+      })
+      console.error('[SolarDataLayers] ==========================================')
       setOverlaysReady(false)
     }
   }

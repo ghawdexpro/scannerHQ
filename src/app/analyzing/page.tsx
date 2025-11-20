@@ -90,21 +90,49 @@ function AnalyzingPageContent() {
       if (data.visualizationData && data.analysisType === 'google_solar') {
         // Fetch dataLayers for visualization
         try {
-          console.log('[ANALYZING] Fetching data layers for visualization...')
+          console.log('[ANALYZING] ========== DATA LAYERS FETCH START ==========')
+          console.log('[ANALYZING] Request URL:', `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=BASE`)
+
           const dataLayersResponse = await fetch(
             `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=BASE`
           )
 
+          console.log('[ANALYZING] Response status:', dataLayersResponse.status, dataLayersResponse.statusText)
+
           if (dataLayersResponse.ok) {
             const layers = await dataLayersResponse.json()
-            console.log('[ANALYZING] Data layers fetched:', layers)
+            console.log('[ANALYZING] Data layers fetched successfully')
+            console.log('[ANALYZING] Data layers structure:', {
+              hasImageryDate: !!layers.imageryDate,
+              hasDsmUrl: !!layers.dsmUrl,
+              hasRgbUrl: !!layers.rgbUrl,
+              hasMaskUrl: !!layers.maskUrl,
+              hasAnnualFluxUrl: !!layers.annualFluxUrl,
+              hasMonthlyFluxUrl: !!layers.monthlyFluxUrl,
+              hourlyShadeUrlsCount: layers.hourlyShadeUrls?.length || 0,
+              imageryQuality: layers.imageryQuality
+            })
+            console.log('[ANALYZING] Sample URLs:', {
+              dsmUrl: layers.dsmUrl?.substring(0, 100) + '...',
+              rgbUrl: layers.rgbUrl?.substring(0, 100) + '...',
+              maskUrl: layers.maskUrl?.substring(0, 100) + '...'
+            })
             setDataLayers(layers)
+            console.log('[ANALYZING] ✅ Data layers set in state')
           } else {
-            console.warn('[ANALYZING] Failed to fetch data layers, visualization may be limited')
+            const errorText = await dataLayersResponse.text()
+            console.error('[ANALYZING] ❌ Failed to fetch data layers')
+            console.error('[ANALYZING] Error response:', errorText)
           }
         } catch (error) {
-          console.error('[ANALYZING] Error fetching data layers:', error)
+          console.error('[ANALYZING] ❌ Exception during data layers fetch:', error)
+          console.error('[ANALYZING] Error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          })
         }
+        console.log('[ANALYZING] ========== DATA LAYERS FETCH END ==========')
+
 
         // Show animated visualization
         setAnalysisState({
@@ -186,6 +214,25 @@ function AnalyzingPageContent() {
             exit={{ opacity: 0 }}
             className="min-h-screen"
           >
+            {(() => {
+              console.log('[ANALYZING] ========== RENDERING SHOWCASE ==========')
+              console.log('[ANALYZING] Props for ShowcaseVisualization:', {
+                coordinates: { lat: parseFloat(lat || '0'), lng: parseFloat(lng || '0') },
+                address: address || '',
+                hasDataLayers: !!dataLayers,
+                dataLayersStructure: dataLayers ? {
+                  hasImageryDate: !!dataLayers.imageryDate,
+                  hasDsmUrl: !!dataLayers.dsmUrl,
+                  hasRgbUrl: !!dataLayers.rgbUrl,
+                  hasMaskUrl: !!dataLayers.maskUrl,
+                  hasAnnualFluxUrl: !!dataLayers.annualFluxUrl,
+                  hasMonthlyFluxUrl: !!dataLayers.monthlyFluxUrl,
+                  hourlyShadeUrlsCount: dataLayers.hourlyShadeUrls?.length || 0,
+                } : 'undefined'
+              })
+              console.log('[ANALYZING] ========================================')
+              return null
+            })()}
             <ShowcaseVisualization
               coordinates={{
                 lat: parseFloat(lat || '0'),

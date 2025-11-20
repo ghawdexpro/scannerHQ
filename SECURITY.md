@@ -143,7 +143,7 @@ if (!result.valid) {
 
 **Google Maps API Key:**
 - Enable HTTP referrer restrictions in Google Cloud Console
-- Restrict to your domain: `ghawdex.pro/*`, `*.vercel.app/*`
+- Restrict to your domain: `ghawdex.pro/*`, `app.ghawdex.pro`
 - Enable only required APIs (Maps JavaScript, Geocoding, Solar, Static Maps)
 - Set quota limits to prevent bill shock
 
@@ -261,12 +261,11 @@ npm audit fix --force        # Force major version updates (test thoroughly)
 
 ### 11. Deployment Security
 
-**Vercel/Railway Deployment:**
+**Railway Deployment:**
 - Enable automatic HTTPS
-- Set environment variables in platform dashboard
-- Enable preview deployment protection
-- Use production/preview/development environments
+- Set environment variables in Railway dashboard
 - Configure domain security (DNSSEC, CAA records)
+- Use production environment for main branch
 
 **Secrets Management:**
 - Use platform's secret manager

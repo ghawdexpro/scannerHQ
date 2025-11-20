@@ -12,13 +12,24 @@ Solar Scan GE is a Next.js 14 application providing instant solar system analysi
 # Development
 npm run dev          # Start dev server on localhost:3000
 
-# Production
-npm run build        # Build for production
+# Production & Linting
+npm run build        # Build for production (Next.js + TypeScript check)
 npm run start        # Start production server
+npm run lint         # Run ESLint + Prettier check (if configured)
 
-# Deployment
-railway up           # Deploy to Railway.app
+# Deployment (Railway CLI v4.8.0 available)
+railway up           # Deploy to production (app.ghawdex.pro)
+railway status       # Check deployment status
+railway variables    # View/manage environment variables
+railway logs         # Stream production logs
+
+# GitHub Operations (GitHub CLI v2.78.0 available)
+gh pr create         # Create pull request
+gh issue list        # List issues
+gh repo view         # View repository info
 ```
+
+**Repository**: https://github.com/ghawdex-engineering/solar-scan-ge
 
 ## Architecture
 
@@ -260,13 +271,14 @@ Add Vitest or Jest when scaling. Currently relying on TypeScript strict mode.
 ### ✅ Implemented
 - Landing page with interactive map input
 - Analysis results page with 20-year ROI charts
+- **Real Google Solar API visualization** (GeoTIFF layers, animated overlays) - See `LAYER_ANIMATION_IMPLEMENTATION_GUIDE.md`
 - Google Maps integration with address search
 - Malta-specific financial calculations
-- Email OTP authentication (switched from phone on 2024-11-18)
+- Email OTP authentication
 - Complete mobile optimization (6 phases)
 - PWA with service worker and install prompt
 - Database schema and type definitions
-- Service layer for Google APIs
+- Service layer for Google APIs (server-side proxy architecture)
 - API rate limiting and validation
 - Admin dashboard with lead/quote management
 - Quote PDF generation
@@ -279,6 +291,26 @@ Add Vitest or Jest when scaling. Currently relying on TypeScript strict mode.
 - Commercial property support
 - Mobile app (React Native)
 
+### 📝 Recent Focus (as of latest commits)
+**Google Solar API Visualization System**: Successfully implemented server-side GeoTIFF processing and canvas rendering. See `LAYER_ANIMATION_IMPLEMENTATION_GUIDE.md` for detailed architecture and implementation details. Recent work focuses on layer animation, proper GroundOverlay rendering, and timeout fallbacks.
+
+## Company Information
+
+**Ghawdex Engineering** - Malta's premier AI-based solar and smart energy solutions provider.
+
+- **Phone**: +356 7905 5156
+- **Address**: Xewkija Industrial Zone, Malta
+- **Website**: https://www.ghawdex.pro
+- **Email**: admin@ghawdex.pro
+- **Production App**: https://app.ghawdex.pro
+
+**Configuration Location**: All company-specific settings are in `src/config/constants.ts`:
+- Company name, phone, address, website
+- Malta solar tariffs (grant vs non-grant)
+- Government grant amounts and percentages
+- Solar panel specifications and system efficiency
+- Location bounds for Malta/Gozo
+
 ## Known Gotchas & Limitations
 
 1. **Rate Limiting**: In-memory only - needs Redis for production with multiple instances
@@ -286,6 +318,7 @@ Add Vitest or Jest when scaling. Currently relying on TypeScript strict mode.
 3. **Mobile Features**: `navigator.deviceMemory` only available in Chrome
 4. **Service Worker**: Must be in `public/` folder, not `src/`
 5. **Admin Auth**: TODO in `src/app/(admin)/layout.tsx` - server-side auth check not working
+6. **GeoTIFF Processing**: Requires server-side handling due to Google Solar API authentication. See `LAYER_ANIMATION_IMPLEMENTATION_GUIDE.md` for implementation details.
 
 ## Important Patterns
 
@@ -374,7 +407,8 @@ solar-scan-ge/
 │   │   ├── (public)/ - Public pages
 │   │   ├── (admin)/ - Admin dashboard
 │   │   ├── auth/ - Authentication pages
-│   │   ├── api/ - API endpoints
+│   │   ├── api/ - API endpoints (server-side)
+│   │   ├── analyzing/ - Solar analysis results with visualization
 │   │   ├── layout.tsx - Root layout (PWA setup)
 │   │   └── globals.css - Global styles (mobile-first)
 │   ├── components/
@@ -383,6 +417,7 @@ solar-scan-ge/
 │   │   ├── PWAInitializer.tsx - Service worker registration
 │   │   ├── InstallPrompt.tsx - PWA install UI
 │   │   ├── address-input/ - Address search and map
+│   │   ├── solar-visualizer/ - **Google Solar API GeoTIFF visualization**
 │   │   ├── admin/ - Admin UI components
 │   │   └── quote/ - Quote components
 │   ├── context/
@@ -395,7 +430,7 @@ solar-scan-ge/
 │   │   └── useHapticFeedback.ts - Haptic feedback
 │   ├── lib/
 │   │   ├── auth/ - Authentication logic
-│   │   ├── google/ - Google APIs
+│   │   ├── google/ - Google APIs (including GeoTIFF processing)
 │   │   ├── ai/ - AI fallback analysis
 │   │   ├── supabase/ - Database clients
 │   │   ├── mobile/ - Network detection, haptic feedback
@@ -405,7 +440,7 @@ solar-scan-ge/
 │   │   ├── email/ - Email service
 │   │   └── pdf/ - PDF quote generation
 │   ├── config/
-│   │   └── constants.ts - App configuration
+│   │   └── constants.ts - App configuration (Malta tariffs, company info, etc)
 │   ├── types/
 │   │   ├── api.ts - API types
 │   │   ├── database.ts - Database types
@@ -419,8 +454,10 @@ solar-scan-ge/
 ├── next.config.ts - Security headers
 ├── tsconfig.json - TypeScript config (strict mode)
 ├── CLAUDE.md - This file
+├── LAYER_ANIMATION_IMPLEMENTATION_GUIDE.md - **Google Solar API visualization architecture**
 ├── MOBILE_OPTIMIZATION.md - Mobile optimization guide
-└── SECURITY.md - Security documentation
+├── SECURITY.md - Security documentation
+└── railway.json - Railway deployment configuration
 ```
 
 ## Database Migration Pattern
@@ -434,15 +471,18 @@ Manual types in `database.ts` should mirror generated types for easier editing.
 
 ## Deployment
 
-### Railway.app (Production)
+### Railway (Production: app.ghawdex.pro)
 
-Configured in project settings:
+The project deploys to Railway.app with the custom domain **app.ghawdex.pro**.
 
 ```bash
 railway up                    # Deploy to production
 railway status               # Check deployment status
-railway variables            # View environment variables
+railway variables            # View/edit environment variables
+railway logs                 # Stream production logs
 ```
+
+**Production URL**: https://app.ghawdex.pro
 
 ### Build Process
 

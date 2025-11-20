@@ -14,7 +14,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://solar-scan-ge-production.up.railway.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://app.ghawdex.pro'),
   title: SEO_CONFIG.title,
   description: SEO_CONFIG.description,
   keywords: SEO_CONFIG.keywords,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     description: SEO_CONFIG.description,
     type: 'website',
     locale: 'en_MT',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://solarscan.ghawdex.pro',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://app.ghawdex.pro',
     siteName: 'Ghawdex Solar Scanner',
     images: [
       {

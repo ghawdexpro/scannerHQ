@@ -119,6 +119,7 @@ declare global {
     showcaseToggleOverlay?: (visible: boolean) => void
     areSolarOverlaysReady?: () => boolean
     getCurrentLayerId?: () => 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none'
+    showcaseSetDesiredLayer?: (layerId: 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none', dayOfYear?: number) => void
     solarDataLayersReady?: boolean
   }
 }
