@@ -5,7 +5,8 @@ import {
   ironPalette,
   rainbowPalette,
   binaryPalette,
-} from './geotiff-renderer'
+  type GeoTiff,
+} from './visualize'
 
 export type LayerId = 'mask' | 'dsm' | 'rgb' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade'
 
@@ -45,7 +46,11 @@ export interface DataLayersResponse {
  */
 export async function getLayer(
   layerId: LayerId,
-  urls: DataLayersResponse
+  urls: DataLayersResponse,
+  options?: {
+    dayOfYear?: number // For hourlyShade layer (1-365)
+    showcaseMode?: boolean // For hourlyShade - show only daylight hours (16 frames vs 24)
+  }
 ): Promise<Layer> {
 
   switch (layerId) {
@@ -60,7 +65,7 @@ export async function getLayer(
     case 'monthlyFlux':
       return await loadMonthlyFluxLayer(urls)
     case 'hourlyShade':
-      return await loadHourlyShadeLayer(urls)
+      return await loadHourlyShadeLayer(urls, options?.dayOfYear, options?.showcaseMode)
     default:
       throw new Error(`Unknown layer: ${layerId}`)
   }
@@ -191,17 +196,23 @@ async function loadMonthlyFluxLayer(urls: DataLayersResponse): Promise<Layer> {
   }
 }
 
-async function loadHourlyShadeLayer(urls: DataLayersResponse): Promise<Layer> {
+async function loadHourlyShadeLayer(
+  urls: DataLayersResponse,
+  dayOfYear: number = 172, // Default to summer solstice
+  showcaseMode: boolean = false
+): Promise<Layer> {
   const mask = await downloadGeoTIFF(urls.maskUrl)
 
-  // Download only a few hours for demo (downloading all 8760 would take too long)
-  // Summer solstice (day 172), noon hour 12
   const HOURS_PER_DAY = 24
-  const SUMMER_SOLSTICE_DAY = 172
-  const hoursToShow = [5, 8, 12, 16, 20] // 5AM, 8AM, noon, 4PM, 8PM
+
+  // In showcase mode, show only daylight hours (5AM-8PM = 16 hours)
+  // In normal mode, show all 24 hours
+  const hoursToShow = showcaseMode
+    ? [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] // 5AM-8PM (16 hours)
+    : Array.from({ length: 24 }, (_, i) => i) // All 24 hours
 
   const hourUrls = hoursToShow.map(hour => {
-    const index = (SUMMER_SOLSTICE_DAY * HOURS_PER_DAY) + hour
+    const index = (dayOfYear * HOURS_PER_DAY) + hour
     return urls.hourlyShadeUrls[index]
   })
 

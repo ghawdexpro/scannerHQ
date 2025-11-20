@@ -7,9 +7,9 @@ import dynamic from 'next/dynamic'
 import { AnalyzeResponse } from '@/types/api'
 import type { DataLayersResponse } from '@/lib/google/layer-loader'
 
-// Dynamically import heavy components
-const SolarVisualizationLoader = dynamic(
-  () => import('@/components/solar-visualizer/SolarVisualizationLoader'),
+// Dynamically import the new showcase visualization
+const ShowcaseVisualization = dynamic(
+  () => import('@/components/solar-visualizer/ShowcaseVisualization'),
   {
     loading: () => <VisualizationSkeleton />,
     ssr: false
@@ -186,16 +186,14 @@ function AnalyzingPageContent() {
             exit={{ opacity: 0 }}
             className="min-h-screen"
           >
-            <SolarVisualizationLoader
+            <ShowcaseVisualization
               coordinates={{
                 lat: parseFloat(lat || '0'),
                 lng: parseFloat(lng || '0')
               }}
-              visualizationData={analysisState.data.visualizationData}
               address={address || ''}
               dataLayers={dataLayers}
               onComplete={handleVisualizationComplete}
-              onSkip={handleSkip}
             />
           </motion.div>
         )}

@@ -15,6 +15,7 @@ interface InteractiveMapInputProps {
 export default function InteractiveMapInput({ onAddressSelect, isLoading = false }: InteractiveMapInputProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const markerRef = useRef<google.maps.Marker | null>(null) // Use ref for immediate access
+  const isMapIdleRef = useRef(false) // Track if map is ready for interactions
   const [map, setMap] = useState<google.maps.Map | null>(null)
   const [marker, setMarker] = useState<google.maps.Marker | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -30,6 +31,9 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   // Handle fullscreen transitions and orientation changes
   useEffect(() => {
     if (map && isFullscreen) {
+      // Reset idle flag when entering fullscreen to wait for map to settle
+      isMapIdleRef.current = false
+
       // Trigger resize on next tick to let DOM settle
       const timer = setTimeout(() => {
         // Trigger resize event to ensure map adjusts to new container size
@@ -160,6 +164,11 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
 
         setMap(mapInstance)
 
+        // Add idle listener to track when map is ready for interactions
+        mapInstance.addListener('idle', () => {
+          isMapIdleRef.current = true
+        })
+
         // Add click listener to map
         mapInstance.addListener('click', async (e: google.maps.MapMouseEvent) => {
           if (e.latLng) {
@@ -181,18 +190,37 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
 
   // Handle map click with memoization
   const handleMapClick = useCallback(async (latLng: google.maps.LatLng, mapInstance: google.maps.Map) => {
+    // If map is not idle yet (still settling from initialization/resize), wait for idle event
+    if (!isMapIdleRef.current) {
+      console.log('Map not idle yet, deferring click...')
+      google.maps.event.addListenerOnce(mapInstance, 'idle', () => {
+        console.log('Map now idle, processing deferred click')
+        handleMapClick(latLng, mapInstance)
+      })
+      return
+    }
+
     const lat = latLng.lat()
     const lng = latLng.lng()
 
+    console.log('=== MAP CLICK DEBUG ===')
+    console.log('Clicked coordinates:', { lat, lng })
+    console.log('Current map center:', mapInstance.getCenter()?.toJSON())
+
     // Get current zoom level
     const currentZoom = mapInstance.getZoom() || 11
+    console.log('Current zoom:', currentZoom)
 
     // If zoomed out too far, zoom in instead of placing pin
     // Only place pin when zoom >= 18 (close enough to see individual properties)
     if (currentZoom < 18) {
-      // Zoom in to this location using setCenter for immediate, precise positioning
-      mapInstance.setCenter({ lat, lng })
-      mapInstance.setZoom(Math.min(currentZoom + 3, 21)) // Zoom in by 3 levels, max 21
+      console.log('Zooming to clicked location:', { lat, lng, newZoom: Math.min(currentZoom + 3, 21) })
+
+      // Use setOptions to set both center and zoom atomically
+      mapInstance.setOptions({
+        center: { lat, lng },
+        zoom: Math.min(currentZoom + 3, 21)
+      })
       toast('Zoom in closer to select your exact property', {
         id: 'zoom-prompt',
         icon: '🔍',

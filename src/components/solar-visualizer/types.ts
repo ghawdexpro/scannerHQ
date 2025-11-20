@@ -79,3 +79,46 @@ export interface Building3DViewProps {
   onComplete: () => void
   isActive: boolean
 }
+
+// === Showcase Types ===
+
+export interface ShowcaseStep {
+  layerId: 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade'
+  title: string
+  description: string
+  mobileDesc: string
+  duration: number // milliseconds
+  message: string
+  toggleEffect?: boolean // If true, blink layer on/off every 1 second
+  dayOfYear?: number // For hourlyShade layers (1-365)
+}
+
+export interface AutoShowcaseProps {
+  onComplete: () => void
+}
+
+export interface SolarDataLayersProps {
+  map: google.maps.Map
+  buildingInsights: {
+    center: {
+      latitude: number
+      longitude: number
+    }
+  }
+  selectedLayerId: 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none'
+  selectedDayOfYear?: number
+  showcaseMode?: boolean
+  dataLayersResponse?: DataLayersResponse
+}
+
+// === Global Window Interface Extensions ===
+
+declare global {
+  interface Window {
+    // Showcase control functions
+    showcaseToggleOverlay?: (visible: boolean) => void
+    areSolarOverlaysReady?: () => boolean
+    getCurrentLayerId?: () => 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none'
+    solarDataLayersReady?: boolean
+  }
+}
