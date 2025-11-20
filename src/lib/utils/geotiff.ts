@@ -16,11 +16,24 @@ export interface GeoTiffData {
 
 /**
  * Fetch and parse a GeoTIFF file from a URL
+ * Automatically appends API key if URL is from Google Solar API
  */
 export const fetchGeoTiff = async (url: string): Promise<GeoTIFF> => {
   try {
-    console.log('[GEOTIFF] Fetching:', url)
-    const tiff = await fromUrl(url)
+    // If URL is from Google Solar API and doesn't have a key parameter, add it
+    let authenticatedUrl = url
+    if (url.includes('solar.googleapis.com') && !url.includes('key=')) {
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        throw new Error('Google Maps API key is not configured')
+      }
+      const separator = url.includes('?') ? '&' : '?'
+      authenticatedUrl = `${url}${separator}key=${apiKey}`
+      console.log('[GEOTIFF] Added API key authentication to Google Solar API URL')
+    }
+
+    console.log('[GEOTIFF] Fetching:', authenticatedUrl.replace(/key=[^&]+/, 'key=***'))
+    const tiff = await fromUrl(authenticatedUrl)
     return tiff
   } catch (error: any) {
     console.error('[GEOTIFF] Failed to fetch:', error.message)
