@@ -40,6 +40,8 @@ export default function HeightMapAnimation({
           center: { lat: center.latitude, lng: center.longitude },
           zoom: 20,
           mapTypeId: 'satellite',
+          tilt: 0,
+          heading: 0,
           disableDefaultUI: true,
           zoomControl: false,
           mapTypeControl: false,
@@ -107,6 +109,11 @@ export default function HeightMapAnimation({
       } catch (error) {
         console.error('[HEIGHT-MAP] Failed to load DSM layer:', error)
         setHeightDataLoaded(false)
+        // Still complete the stage after delay even on error
+        setTimeout(() => {
+          console.warn('[HEIGHT-MAP] Completing stage despite error')
+          onComplete()
+        }, 2000)
       }
     }
 
@@ -130,6 +137,18 @@ export default function HeightMapAnimation({
 
     return () => clearTimeout(timer)
   }, [isActive, heightDataLoaded, onComplete])
+
+  // Safety timeout: force completion after 10 seconds
+  useEffect(() => {
+    if (!isActive) return
+
+    const safetyTimer = setTimeout(() => {
+      console.warn('[HEIGHT-MAP] Safety timeout reached, forcing completion')
+      onComplete()
+    }, 10000)
+
+    return () => clearTimeout(safetyTimer)
+  }, [isActive, onComplete])
 
   if (!dataLayers) {
     // Fallback: No DSM data available

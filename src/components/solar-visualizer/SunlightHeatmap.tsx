@@ -37,6 +37,8 @@ export default function SunlightHeatmap({
           center: { lat: center.latitude, lng: center.longitude },
           zoom: 20,
           mapTypeId: 'satellite',
+          tilt: 0,
+          heading: 0,
           disableDefaultUI: true,
           zoomControl: false,
           mapTypeControl: false,
@@ -104,6 +106,11 @@ export default function SunlightHeatmap({
       } catch (error) {
         console.error('[HEATMAP] Failed to load annual flux layer:', error)
         setFluxLoaded(false)
+        // Still complete the stage after delay even on error
+        setTimeout(() => {
+          console.warn('[HEATMAP] Completing stage despite error')
+          onComplete()
+        }, 2000)
       }
     }
 
@@ -139,6 +146,18 @@ export default function SunlightHeatmap({
       clearTimeout(timer3)
     }
   }, [isActive, onComplete, fluxLoaded])
+
+  // Safety timeout: force completion after 10 seconds
+  useEffect(() => {
+    if (!isActive) return
+
+    const safetyTimer = setTimeout(() => {
+      console.warn('[HEATMAP] Safety timeout reached, forcing completion')
+      onComplete()
+    }, 10000)
+
+    return () => clearTimeout(safetyTimer)
+  }, [isActive, onComplete])
 
   // Get color for intensity value (kWh/m²/year)
   const getHeatmapColor = (intensity: number) => {

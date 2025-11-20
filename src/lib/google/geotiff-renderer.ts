@@ -13,12 +13,13 @@ export const ironPalette = [
 ]
 
 export const rainbowPalette = [
-  '#3d3d3d', '#414141', '#464646', '#4a4a4a', '#4f4f4f', '#535353', '#585858', '#5c5c5c',
-  '#616161', '#656565', '#6a6a6a', '#6e6e6e', '#737373', '#777777', '#7c7c7c', '#808080',
-  '#858585', '#898989', '#8e8e8e', '#929292', '#979797', '#9b9b9b', '#a0a0a0', '#a4a4a4',
-  '#a9a9a9', '#adadad', '#b2b2b2', '#b6b6b6', '#bbbbbb', '#bfbfbf', '#c4c4c4', '#c8c8c8',
-  '#cdcdcd', '#d1d1d1', '#d6d6d6', '#dadada', '#dfdfdf', '#e3e3e3', '#e8e8e8', '#ececec',
-  '#f1f1f1', '#f5f5f5', '#fafafa',
+  // Purple (low elevation) -> Blue -> Cyan -> Green -> Yellow -> Orange -> Red (high elevation)
+  '#440154', '#481567', '#482677', '#453781', '#404788', '#39568c', '#33638d', '#2d708e',
+  '#287d8e', '#238a8d', '#1f968b', '#20a387', '#29af7f', '#3cbb75', '#55c667', '#73d055',
+  '#95d840', '#b8de29', '#dce319', '#fde724', '#fde825', '#fde227', '#fddc29', '#fdd72d',
+  '#fcd134', '#fbcb3c', '#fac344', '#f8bb4c', '#f7b254', '#f5a85d', '#f29e66', '#ef936f',
+  '#ec8879', '#e87d82', '#e3718b', '#de6693', '#d85b9b', '#d150a2', '#c945a8', '#c03bae',
+  '#b631b3', '#ac28b7', '#a11fba', '#9617bc', '#8a0fbd', '#7e08bd', '#7201bc', '#6600ba',
 ]
 
 export const binaryPalette = ['#000000', '#ffffff']

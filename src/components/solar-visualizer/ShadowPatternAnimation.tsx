@@ -42,6 +42,8 @@ export default function ShadowPatternAnimation({
           center: { lat: center.latitude, lng: center.longitude },
           zoom: 20,
           mapTypeId: 'satellite',
+          tilt: 0,
+          heading: 0,
           disableDefaultUI: true,
           zoomControl: false,
           mapTypeControl: false,
@@ -79,6 +81,11 @@ export default function ShadowPatternAnimation({
       } catch (error) {
         console.error('[SHADOWS] Failed to load hourly shade layer:', error)
         setShadowsLoaded(false)
+        // Still complete the stage after delay even on error
+        setTimeout(() => {
+          console.warn('[SHADOWS] Completing stage despite error')
+          onComplete()
+        }, 2000)
       }
     }
 
@@ -102,6 +109,18 @@ export default function ShadowPatternAnimation({
 
     return () => clearInterval(interval)
   }, [isActive, shadowsLoaded, overlayDataUrls.length, onComplete])
+
+  // Safety timeout: force completion after 12 seconds
+  useEffect(() => {
+    if (!isActive) return
+
+    const safetyTimer = setTimeout(() => {
+      console.warn('[SHADOWS] Safety timeout reached, forcing completion')
+      onComplete()
+    }, 12000)
+
+    return () => clearTimeout(safetyTimer)
+  }, [isActive, onComplete])
 
   // Update overlay when hour changes
   useEffect(() => {
