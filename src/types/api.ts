@@ -54,6 +54,10 @@ export interface VisualizationData {
     latitude: number
     longitude: number
   }
+  pinLocation: {
+    latitude: number
+    longitude: number
+  }
   imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
   roofSegments: Array<{
     id: string
@@ -81,6 +85,18 @@ export interface VisualizationData {
     height: number
     capacity: number
   }
+  dataLayers?: {
+    annualFluxUrl: string        // Annual solar irradiation GeoTIFF (kWh/m²/year)
+    monthlyFluxUrl: string        // Monthly irradiation breakdown
+    dsmUrl: string                // Digital Surface Model - height/elevation data
+    rgbUrl: string                // RGB satellite imagery
+    maskUrl: string               // Roof mask (which pixels are roof)
+    shadowPatterns: {
+      summerSolstice: string      // June 21 at noon - shortest shadows
+      winterSolstice: string      // December 21 at noon - longest shadows
+      equinox: string             // March/September 21 at noon - medium shadows
+    }
+  } | null
 }
 
 export interface AnalyzeResponse {

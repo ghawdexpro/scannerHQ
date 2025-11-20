@@ -38,6 +38,12 @@ export const ANIMATION_STAGES: AnimationStage[] = [
     description: 'Calculating solar irradiance patterns'
   },
   {
+    id: 'shadow_patterns',
+    name: 'Shadow Analysis',
+    duration: 4200,
+    description: 'Analyzing seasonal shadow patterns'
+  },
+  {
     id: 'panel_placement',
     name: 'Placing Solar Panels',
     duration: 4000,
@@ -72,6 +78,7 @@ export interface SunlightHeatmapProps {
   center: { latitude: number; longitude: number }
   onComplete: () => void
   isActive: boolean
+  annualFluxUrl?: string
 }
 
 export interface Building3DViewProps {

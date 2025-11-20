@@ -9,9 +9,10 @@ import { SolarVisualizationLoaderProps, ANIMATION_STAGES } from './types'
 const RoofSegmentAnimation = dynamic(() => import('./RoofSegmentAnimation'), { ssr: false })
 const PanelPlacementAnimation = dynamic(() => import('./PanelPlacementAnimation'), { ssr: false })
 const SunlightHeatmap = dynamic(() => import('./SunlightHeatmap'), { ssr: false })
+const ShadowPatternAnimation = dynamic(() => import('./ShadowPatternAnimation'), { ssr: false })
 const Building3DView = dynamic(() => import('./Building3DView'), { ssr: false })
 
-type AnimationStageId = 'satellite' | 'roof_detection' | 'sunlight_analysis' | 'panel_placement' | '3d_render'
+type AnimationStageId = 'satellite' | 'roof_detection' | 'sunlight_analysis' | 'shadow_patterns' | 'panel_placement' | '3d_render'
 
 export default function SolarVisualizationLoader({
   coordinates,
@@ -140,12 +141,24 @@ export default function SolarVisualizationLoader({
                 key="sunlight_analysis"
                 segments={visualizationData.roofSegments}
                 center={visualizationData.buildingCenter}
+                annualFluxUrl={visualizationData.dataLayers?.annualFluxUrl}
                 onComplete={handleStageComplete}
                 isActive={true}
               />
             )}
 
-            {/* Stage 4: Panel Placement */}
+            {/* Stage 4: Shadow Pattern Analysis */}
+            {currentStageId === 'shadow_patterns' && (
+              <ShadowPatternAnimation
+                key="shadow_patterns"
+                center={visualizationData.pinLocation}
+                shadowPatterns={visualizationData.dataLayers?.shadowPatterns}
+                onComplete={handleStageComplete}
+                isActive={true}
+              />
+            )}
+
+            {/* Stage 5: Panel Placement */}
             {currentStageId === 'panel_placement' && (
               <PanelPlacementAnimation
                 key="panel_placement"
@@ -158,7 +171,7 @@ export default function SolarVisualizationLoader({
               />
             )}
 
-            {/* Stage 5: 3D Render */}
+            {/* Stage 6: 3D Render */}
             {currentStageId === '3d_render' && (
               <Building3DView
                 key="3d_render"

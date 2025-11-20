@@ -78,8 +78,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
           throw new Error('Failed to calculate solar configuration')
         }
 
-        // Extract visualization data for animated presentation
-        visualizationData = extractVisualizationData(buildingInsights)
+        // Extract visualization data for animated presentation with real GeoTIFF layers
+        visualizationData = await extractVisualizationData(buildingInsights, lat, lng)
         analysisType = 'google_solar'
 
         console.log(`[ANALYZE] Google Solar API succeeded with quality: ${imageryQuality}`)

@@ -347,9 +347,77 @@ export const calculateSunlightIntensity = (
   return { min, max, average, quality }
 }
 
-// Extract visualization data from building insights
-export const extractVisualizationData = (buildingInsights: BuildingInsightsResponse) => {
+// Extract visualization data from building insights with real GeoTIFF data layers
+export const extractVisualizationData = async (
+  buildingInsights: BuildingInsightsResponse,
+  pinLat: number,
+  pinLng: number
+) => {
   const { solarPotential, center, imageryQuality } = buildingInsights
+
+  // Fetch real data layers (irradiation, shadows, height) for the exact pin location
+  let dataLayers: {
+    annualFluxUrl: string
+    monthlyFluxUrl: string
+    dsmUrl: string
+    rgbUrl: string
+    maskUrl: string
+    shadowPatterns: {
+      summerSolstice: string
+      winterSolstice: string
+      equinox: string
+    }
+  } | null = null
+
+  try {
+    console.log(`[SOLAR-SERVICE] Fetching data layers for pin location: (${pinLat}, ${pinLng})`)
+
+    const dataLayersResponse = await getDataLayers(pinLat, pinLng, 50, 'LOW')
+
+    // hourlyShadeUrls contains shadow data for each hour of the year
+    // Array length: 365 days * 24 hours = 8760 entries
+    const hourlyShadeUrls = dataLayersResponse.hourlyShadeUrls
+
+    // Calculate indices for specific days at noon (12:00)
+    const HOURS_PER_DAY = 24
+    const NOON_HOUR = 12
+
+    // Day of year calculations (approximate):
+    // Summer Solstice: June 21 (day ~172)
+    // Winter Solstice: December 21 (day ~355)
+    // Spring Equinox: March 21 (day ~80)
+    const SUMMER_SOLSTICE_DAY = 172
+    const WINTER_SOLSTICE_DAY = 355
+    const EQUINOX_DAY = 80
+
+    const summerIndex = (SUMMER_SOLSTICE_DAY * HOURS_PER_DAY) + NOON_HOUR
+    const winterIndex = (WINTER_SOLSTICE_DAY * HOURS_PER_DAY) + NOON_HOUR
+    const equinoxIndex = (EQUINOX_DAY * HOURS_PER_DAY) + NOON_HOUR
+
+    dataLayers = {
+      annualFluxUrl: dataLayersResponse.annualFluxUrl,
+      monthlyFluxUrl: dataLayersResponse.monthlyFluxUrl,
+      dsmUrl: dataLayersResponse.dsmUrl,
+      rgbUrl: dataLayersResponse.rgbUrl,
+      maskUrl: dataLayersResponse.maskUrl,
+      shadowPatterns: {
+        summerSolstice: hourlyShadeUrls[summerIndex] || hourlyShadeUrls[0],
+        winterSolstice: hourlyShadeUrls[winterIndex] || hourlyShadeUrls[0],
+        equinox: hourlyShadeUrls[equinoxIndex] || hourlyShadeUrls[0]
+      }
+    }
+
+    console.log('[SOLAR-SERVICE] Data layers fetched successfully:', {
+      hasAnnualFlux: !!dataLayers.annualFluxUrl,
+      hasDSM: !!dataLayers.dsmUrl,
+      hasShadows: !!dataLayers.shadowPatterns.summerSolstice,
+      totalShadeUrls: hourlyShadeUrls.length
+    })
+  } catch (error: any) {
+    console.error('[SOLAR-SERVICE] Failed to fetch data layers:', error.message)
+    // Continue without data layers - visualization will use fallback mode
+    dataLayers = null
+  }
 
   // Process roof segments with sunlight intensity
   const roofSegments = solarPotential.roofSegmentStats.map((segment, index) => {
@@ -375,6 +443,7 @@ export const extractVisualizationData = (buildingInsights: BuildingInsightsRespo
 
   return {
     buildingCenter: center,
+    pinLocation: { latitude: pinLat, longitude: pinLng },
     imageryQuality: imageryQuality || 'MEDIUM',
     roofSegments,
     totalRoofArea: solarPotential.wholeRoofStats.areaMeters2,
@@ -383,6 +452,7 @@ export const extractVisualizationData = (buildingInsights: BuildingInsightsRespo
       width: solarPotential.panelWidthMeters,
       height: solarPotential.panelHeightMeters,
       capacity: solarPotential.panelCapacityWatts
-    }
+    },
+    dataLayers
   }
 }
