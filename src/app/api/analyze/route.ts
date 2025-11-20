@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateAnalysisParams, sanitizeAddress } from '@/lib/utils/validation'
 import { analysissRateLimit } from '@/lib/middleware/rate-limit'
-import { getBuildingInsights, calculateSolarConfiguration, calculateFinancials } from '@/lib/google/solar-service'
+import { getBuildingInsights, calculateSolarConfiguration, calculateFinancials, extractVisualizationData } from '@/lib/google/solar-service'
 import { analyzeRoofWithAI, calculateAISolarPotential } from '@/lib/ai/roof-detection'
 import { getLocationType } from '@/lib/utils/location'
 import { createClient } from '@supabase/supabase-js'
@@ -60,80 +60,89 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
     const locationType = getLocationType(lat, lng)
     let analysisType: 'google_solar' | 'ai_fallback' = 'google_solar'
     let solarAnalysis: any = null
+    let visualizationData: any = null
+    let imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE' | undefined
 
     console.log(`[ANALYZE] Location type detected: ${locationType}`)
 
-    if (locationType === 'gozo') {
-      // Gozo - Use AI analysis directly (Google Solar API has no coverage)
-      console.log('[ANALYZE] Gozo location, using AI analysis')
-      analysisType = 'ai_fallback'
+    // Always try Google Solar API first for Malta locations
+    if (locationType === 'malta' || locationType === 'gozo') {
+      console.log('[ANALYZE] Attempting Google Solar API')
 
       try {
-        const roofAnalysis = await analyzeRoofWithAI(lat, lng)
-        const aiPotential = calculateAISolarPotential(roofAnalysis)
-
-        // Calculate financial projections using same function as Google Solar API
-        const withGrant = calculateFinancials(
-          aiPotential.systemSize,
-          aiPotential.yearlyGeneration,
-          true
-        )
-        const withoutGrant = calculateFinancials(
-          aiPotential.systemSize,
-          aiPotential.yearlyGeneration,
-          false
-        )
-
-        solarAnalysis = {
-          panelsCount: aiPotential.panelCount,
-          systemSize: aiPotential.systemSize,
-          yearlyGeneration: aiPotential.yearlyGeneration,
-          roofArea: roofAnalysis.roofArea,
-          maxSunshineHours: 3000, // Malta average
-          withGrant,
-          withoutGrant,
-          roofSegments: []
-        }
-
-        console.log('[ANALYZE] AI analysis succeeded')
-      } catch (aiError: any) {
-        console.error('[ANALYZE] AI analysis failed:', aiError)
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'AI_ANALYSIS_ERROR',
-            message: `AI roof analysis failed: ${aiError.message || aiError}`,
-            timestamp: new Date().toISOString()
-          },
-          { status: 503 }
-        )
-      }
-    } else if (locationType === 'malta') {
-      // Malta main island - Use Google Solar API
-      console.log('[ANALYZE] Malta main island location, using Google Solar API')
-      analysisType = 'google_solar'
-
-      try {
-        const buildingInsights = await getBuildingInsights(lat, lng)
+        const buildingInsights = await getBuildingInsights(lat, lng, 'LOW')
         solarAnalysis = calculateSolarConfiguration(buildingInsights.solarPotential)
+        imageryQuality = buildingInsights.imageryQuality
 
         if (!solarAnalysis) {
           throw new Error('Failed to calculate solar configuration')
         }
 
-        // TODO: Add presentation here (user is developing this)
-        console.log('[ANALYZE] Google Solar API succeeded')
+        // Extract visualization data for animated presentation
+        visualizationData = extractVisualizationData(buildingInsights)
+        analysisType = 'google_solar'
+
+        console.log(`[ANALYZE] Google Solar API succeeded with quality: ${imageryQuality}`)
       } catch (googleError: any) {
         console.error('[ANALYZE] Google Solar API failed:', googleError)
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'GOOGLE_SOLAR_ERROR',
-            message: `Google Solar API failed: ${googleError.message || googleError}`,
-            timestamp: new Date().toISOString()
-          },
-          { status: 503 }
-        )
+
+        // If 404 (location not found), fall back to AI analysis
+        if (googleError.message === 'LOCATION_NOT_FOUND') {
+          console.log('[ANALYZE] Solar API coverage unavailable, falling back to AI analysis')
+          analysisType = 'ai_fallback'
+
+          try {
+            const roofAnalysis = await analyzeRoofWithAI(lat, lng)
+            const aiPotential = calculateAISolarPotential(roofAnalysis)
+
+            // Calculate financial projections using same function as Google Solar API
+            const withGrant = calculateFinancials(
+              aiPotential.systemSize,
+              aiPotential.yearlyGeneration,
+              true
+            )
+            const withoutGrant = calculateFinancials(
+              aiPotential.systemSize,
+              aiPotential.yearlyGeneration,
+              false
+            )
+
+            solarAnalysis = {
+              panelsCount: aiPotential.panelCount,
+              systemSize: aiPotential.systemSize,
+              yearlyGeneration: aiPotential.yearlyGeneration,
+              roofArea: roofAnalysis.roofArea,
+              maxSunshineHours: 3000, // Malta average
+              withGrant,
+              withoutGrant,
+              roofSegments: []
+            }
+
+            console.log('[ANALYZE] AI analysis succeeded')
+          } catch (aiError: any) {
+            console.error('[ANALYZE] AI analysis failed:', aiError)
+            return NextResponse.json(
+              {
+                success: false,
+                error: 'AI_ANALYSIS_ERROR',
+                message: `AI roof analysis failed: ${aiError.message || aiError}`,
+                timestamp: new Date().toISOString()
+              },
+              { status: 503 }
+            )
+          }
+        } else {
+          // Other Solar API errors
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'GOOGLE_SOLAR_ERROR',
+              message: `Google Solar API failed: ${googleError.message || googleError}`,
+              timestamp: new Date().toISOString()
+            },
+            { status: 503 }
+          )
+        }
       }
     } else {
       // Location outside Malta and Gozo
@@ -197,6 +206,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
       address,
       coordinates: { lat, lng },
       analysis: solarAnalysis,
+      visualizationData: visualizationData || null,
+      imageryQuality: imageryQuality || undefined,
       timestamp: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
     }

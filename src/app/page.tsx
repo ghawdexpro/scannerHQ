@@ -24,9 +24,8 @@ export default function Home() {
     // Track analysis request
     trackAnalysisRequest(address)
 
-    // TODO: Re-enable authentication check when Google/Apple OAuth is implemented
-    // Navigate directly to analyze page (auth disabled for development)
-    window.location.href = `/analyze?lat=${coordinates.lat}&lng=${coordinates.lng}&address=${encodeURIComponent(address)}`
+    // Navigate to analyzing page with animated visualization
+    window.location.href = `/analyzing?lat=${coordinates.lat}&lng=${coordinates.lng}&address=${encodeURIComponent(address)}`
   }
 
   return (

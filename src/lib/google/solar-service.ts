@@ -84,7 +84,34 @@ export interface BuildingInsightsResponse {
     month: number
     day: number
   }
+  imageryQuality?: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
   solarPotential: SolarPotential
+}
+
+export interface DataLayersResponse {
+  imageryDate: {
+    year: number
+    month: number
+    day: number
+  }
+  imageryProcessedDate: {
+    year: number
+    month: number
+    day: number
+  }
+  dsmUrl: string
+  rgbUrl: string
+  maskUrl: string
+  annualFluxUrl: string
+  monthlyFluxUrl: string
+  hourlyShadeUrls: string[]
+  imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
+}
+
+export interface GeoTiffOptions {
+  pixelSizeMeters?: number
+  radiusMeters?: number
+  view?: 'DSM_LAYER' | 'RGB_LAYER' | 'MASK_LAYER' | 'ANNUAL_FLUX_LAYER' | 'MONTHLY_FLUX_LAYER' | 'HOURLY_SHADE_LAYER'
 }
 
 // Get building insights from Google Solar API
@@ -231,5 +258,124 @@ export const checkSolarApiAvailability = async (
     }
     // For other errors, we might want to retry or handle differently
     throw error
+  }
+}
+
+// Get data layers for visualization
+export const getDataLayers = async (
+  lat: number,
+  lng: number,
+  radiusMeters: number = 100,
+  requiredQuality: 'HIGH' | 'MEDIUM' | 'LOW' = 'HIGH'
+): Promise<DataLayersResponse> => {
+  try {
+    const response = await axios.get(
+      `${SOLAR_API_BASE}/dataLayers:get`,
+      {
+        params: {
+          'location.latitude': lat,
+          'location.longitude': lng,
+          radiusMeters,
+          requiredQuality,
+          view: 'FULL_LAYERS',
+          key: process.env.GOOGLE_SOLAR_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+        }
+      }
+    )
+
+    return response.data
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('LOCATION_NOT_FOUND')
+    }
+    console.error('Data Layers API error:', error)
+    throw new Error('Failed to fetch data layers')
+  }
+}
+
+// Get GeoTIFF URL for specific layer type
+export const getGeoTiffUrl = (
+  lat: number,
+  lng: number,
+  options: GeoTiffOptions = {}
+): string => {
+  const {
+    pixelSizeMeters = 0.5,
+    radiusMeters = 100,
+    view = 'ANNUAL_FLUX_LAYER'
+  } = options
+
+  const apiKey = process.env.GOOGLE_SOLAR_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+  const params = new URLSearchParams({
+    'location.latitude': lat.toString(),
+    'location.longitude': lng.toString(),
+    radiusMeters: radiusMeters.toString(),
+    pixelSizeMeters: pixelSizeMeters.toString(),
+    view,
+    key: apiKey || ''
+  })
+
+  return `${SOLAR_API_BASE}/geoTiff:get?${params.toString()}`
+}
+
+// Calculate sunlight intensity from roof segment stats
+export const calculateSunlightIntensity = (
+  sunshineQuantiles: number[]
+): { min: number; max: number; average: number; quality: 'excellent' | 'good' | 'fair' | 'poor' } => {
+  if (!sunshineQuantiles || sunshineQuantiles.length === 0) {
+    return { min: 0, max: 0, average: 0, quality: 'poor' }
+  }
+
+  const min = Math.min(...sunshineQuantiles)
+  const max = Math.max(...sunshineQuantiles)
+  const average = sunshineQuantiles.reduce((sum, val) => sum + val, 0) / sunshineQuantiles.length
+
+  let quality: 'excellent' | 'good' | 'fair' | 'poor'
+  if (average >= 1500) quality = 'excellent'
+  else if (average >= 1200) quality = 'good'
+  else if (average >= 900) quality = 'fair'
+  else quality = 'poor'
+
+  return { min, max, average, quality }
+}
+
+// Extract visualization data from building insights
+export const extractVisualizationData = (buildingInsights: BuildingInsightsResponse) => {
+  const { solarPotential, center, imageryQuality } = buildingInsights
+
+  // Process roof segments with sunlight intensity
+  const roofSegments = solarPotential.roofSegmentStats.map((segment, index) => {
+    const intensity = calculateSunlightIntensity(segment.stats.sunshineQuantiles)
+
+    return {
+      id: `segment-${index}`,
+      center: segment.center,
+      boundingBox: segment.boundingBox,
+      area: segment.stats.areaMeters2,
+      pitch: segment.pitchDegrees,
+      azimuth: segment.azimuthDegrees,
+      height: segment.planeHeightAtCenterMeters,
+      sunlightIntensity: intensity,
+      // Determine if segment is optimal for solar (south-facing, good angle)
+      isOptimal: segment.azimuthDegrees >= 135 && segment.azimuthDegrees <= 225 &&
+                 segment.pitchDegrees >= 15 && segment.pitchDegrees <= 40
+    }
+  })
+
+  // Sort by sunlight intensity (best first)
+  roofSegments.sort((a, b) => b.sunlightIntensity.average - a.sunlightIntensity.average)
+
+  return {
+    buildingCenter: center,
+    imageryQuality: imageryQuality || 'MEDIUM',
+    roofSegments,
+    totalRoofArea: solarPotential.wholeRoofStats.areaMeters2,
+    maxPanels: solarPotential.maxArrayPanelsCount,
+    panelDimensions: {
+      width: solarPotential.panelWidthMeters,
+      height: solarPotential.panelHeightMeters,
+      capacity: solarPotential.panelCapacityWatts
+    }
   }
 }

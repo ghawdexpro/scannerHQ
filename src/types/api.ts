@@ -49,6 +49,40 @@ export interface RoofSegment {
   optimalForSolar: boolean
 }
 
+export interface VisualizationData {
+  buildingCenter: {
+    latitude: number
+    longitude: number
+  }
+  imageryQuality: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
+  roofSegments: Array<{
+    id: string
+    center: { latitude: number; longitude: number }
+    boundingBox: {
+      sw: { latitude: number; longitude: number }
+      ne: { latitude: number; longitude: number }
+    }
+    area: number
+    pitch: number
+    azimuth: number
+    height: number
+    sunlightIntensity: {
+      min: number
+      max: number
+      average: number
+      quality: 'excellent' | 'good' | 'fair' | 'poor'
+    }
+    isOptimal: boolean
+  }>
+  totalRoofArea: number
+  maxPanels: number
+  panelDimensions: {
+    width: number
+    height: number
+    capacity: number
+  }
+}
+
 export interface AnalyzeResponse {
   success: boolean
   analysisId: string
@@ -59,6 +93,8 @@ export interface AnalyzeResponse {
     lng: number
   }
   analysis: SolarAnalysisResult
+  visualizationData?: VisualizationData | null
+  imageryQuality?: 'HIGH' | 'MEDIUM' | 'LOW' | 'BASE'
   timestamp: string
   expiresAt: string
 }
