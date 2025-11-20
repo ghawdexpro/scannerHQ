@@ -261,35 +261,25 @@ function SolarPanels({ visualizationData }: { visualizationData: Building3DViewP
 
   return (
     <group>
-      {panels.map((panel, index) => (
-        <motion.group
-          key={index}
-          initial={{ scale: 0, y: panel.position[1] + 2 }}
-          animate={{ scale: 1, y: panel.position[1] }}
-          // @ts-ignore - motion group typing issue
-          transition={{
-            type: 'spring',
-            stiffness: 200,
-            damping: 15,
-            delay: index * 0.03
-          }}
-        >
-          <mesh
-            position={panel.position}
-            rotation={panel.rotation}
-            castShadow
-          >
-            <boxGeometry args={[0.4, 0.02, 0.7]} />
-            <meshStandardMaterial
-              color="#1e40af"
-              metalness={0.5}
-              roughness={0.2}
-              emissive="#3b82f6"
-              emissiveIntensity={0.1}
-            />
-          </mesh>
-        </motion.group>
-      ))}
+      {panels.map((panel, index) => {
+        // Simple show/hide based on visibility
+        const isVisible = index < visiblePanels
+
+        return isVisible ? (
+          <group key={index} position={panel.position} rotation={panel.rotation}>
+            <mesh castShadow>
+              <boxGeometry args={[0.4, 0.02, 0.7]} />
+              <meshStandardMaterial
+                color="#1e40af"
+                metalness={0.5}
+                roughness={0.2}
+                emissive="#3b82f6"
+                emissiveIntensity={0.1}
+              />
+            </mesh>
+          </group>
+        ) : null
+      })}
     </group>
   )
 }

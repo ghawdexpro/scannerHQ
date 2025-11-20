@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
@@ -23,7 +23,7 @@ interface AnalysisState {
   error: string | null
 }
 
-export default function AnalyzingPage() {
+function AnalyzingPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -316,5 +316,14 @@ function VisualizationSkeleton() {
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-white text-lg">Loading visualization...</div>
     </div>
+  )
+}
+
+// Wrapper with Suspense boundary
+export default function AnalyzingPage() {
+  return (
+    <Suspense fallback={<VisualizationSkeleton />}>
+      <AnalyzingPageContent />
+    </Suspense>
   )
 }
