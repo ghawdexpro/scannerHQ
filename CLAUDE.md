@@ -29,7 +29,7 @@ gh issue list        # List issues
 gh repo view         # View repository info
 ```
 
-**Repository**: https://github.com/ghawdex-engineering/solar-scan-ge
+**Repository**: https://github.com/ghawdexpro/solar-analisys-ghawdex
 
 ## Architecture
 

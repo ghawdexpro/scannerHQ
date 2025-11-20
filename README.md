@@ -27,8 +27,8 @@ An AI-powered web application for instant solar system analysis and quotes for r
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/ghawdex-engineering/solar-scan-ge.git
-cd solar-scan-ge
+git clone https://github.com/ghawdexpro/solar-analisys-ghawdex.git
+cd solar-analisys-ghawdex
 ```
 
 2. Install dependencies:
