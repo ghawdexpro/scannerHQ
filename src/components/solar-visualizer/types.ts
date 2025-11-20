@@ -1,4 +1,5 @@
 import { VisualizationData } from '@/types/api'
+import type { DataLayersResponse } from '@/lib/google/layer-loader'
 
 export interface SolarVisualizationLoaderProps {
   coordinates: {
@@ -9,6 +10,7 @@ export interface SolarVisualizationLoaderProps {
   address: string
   onComplete: () => void
   onSkip: () => void
+  dataLayers?: DataLayersResponse
 }
 
 export interface AnimationStage {
@@ -66,7 +68,7 @@ export interface SunlightHeatmapProps {
   center: { latitude: number; longitude: number }
   onComplete: () => void
   isActive: boolean
-  annualFluxUrl?: string
+  dataLayers?: DataLayersResponse
 }
 
 export interface Building3DViewProps {

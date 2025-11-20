@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { AnalyzeResponse } from '@/types/api'
+import type { DataLayersResponse } from '@/lib/google/layer-loader'
 
 // Dynamically import heavy components
 const SolarVisualizationLoader = dynamic(
@@ -38,6 +39,8 @@ function AnalyzingPageContent() {
     data: null,
     error: null
   })
+
+  const [dataLayers, setDataLayers] = useState<DataLayersResponse | undefined>(undefined)
 
   // Run the analysis
   const runAnalysis = useCallback(async () => {
@@ -85,6 +88,24 @@ function AnalyzingPageContent() {
 
       // Check if we have visualization data (Google Solar API available)
       if (data.visualizationData && data.analysisType === 'google_solar') {
+        // Fetch dataLayers for visualization
+        try {
+          console.log('[ANALYZING] Fetching data layers for visualization...')
+          const dataLayersResponse = await fetch(
+            `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=BASE`
+          )
+
+          if (dataLayersResponse.ok) {
+            const layers = await dataLayersResponse.json()
+            console.log('[ANALYZING] Data layers fetched:', layers)
+            setDataLayers(layers)
+          } else {
+            console.warn('[ANALYZING] Failed to fetch data layers, visualization may be limited')
+          }
+        } catch (error) {
+          console.error('[ANALYZING] Error fetching data layers:', error)
+        }
+
         // Show animated visualization
         setAnalysisState({
           status: 'visualizing',
@@ -172,6 +193,7 @@ function AnalyzingPageContent() {
               }}
               visualizationData={analysisState.data.visualizationData}
               address={address || ''}
+              dataLayers={dataLayers}
               onComplete={handleVisualizationComplete}
               onSkip={handleSkip}
             />

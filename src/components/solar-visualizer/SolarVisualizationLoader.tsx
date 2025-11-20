@@ -17,7 +17,8 @@ export default function SolarVisualizationLoader({
   visualizationData,
   address,
   onComplete,
-  onSkip
+  onSkip,
+  dataLayers
 }: SolarVisualizationLoaderProps) {
   const [currentStageIndex, setCurrentStageIndex] = useState(0)
   const [showSkipButton, setShowSkipButton] = useState(false)
@@ -127,7 +128,7 @@ export default function SolarVisualizationLoader({
               <HeightMapAnimation
                 key="height_map"
                 center={visualizationData.pinLocation}
-                dsmUrl={visualizationData.dataLayers?.dsmUrl}
+                dataLayers={dataLayers}
                 onComplete={handleStageComplete}
                 isActive={true}
               />
@@ -139,7 +140,7 @@ export default function SolarVisualizationLoader({
                 key="solar_flux"
                 segments={visualizationData.roofSegments}
                 center={visualizationData.pinLocation}
-                annualFluxUrl={visualizationData.dataLayers?.annualFluxUrl}
+                dataLayers={dataLayers}
                 onComplete={handleStageComplete}
                 isActive={true}
               />
@@ -150,7 +151,7 @@ export default function SolarVisualizationLoader({
               <ShadowPatternAnimation
                 key="shadow_patterns"
                 center={visualizationData.pinLocation}
-                shadowPatterns={visualizationData.dataLayers?.shadowPatterns}
+                dataLayers={dataLayers}
                 onComplete={handleStageComplete}
                 isActive={true}
               />

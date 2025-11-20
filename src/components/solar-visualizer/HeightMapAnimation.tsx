@@ -2,84 +2,80 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { fetchAndParseGeoTiff, geoTiffToImageData } from '@/lib/utils/geotiff'
+import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
 
 export interface HeightMapAnimationProps {
   center: { latitude: number; longitude: number }
-  dsmUrl?: string
+  dataLayers?: DataLayersResponse
   onComplete: () => void
   isActive: boolean
 }
 
 export default function HeightMapAnimation({
   center,
-  dsmUrl,
+  dataLayers,
   onComplete,
   isActive
 }: HeightMapAnimationProps) {
   const [mapLoaded, setMapLoaded] = useState(false)
   const [heightDataLoaded, setHeightDataLoaded] = useState(false)
   const [heightStats, setHeightStats] = useState<{ min: number; max: number; avg: number } | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [overlayUrl, setOverlayUrl] = useState<string | null>(null)
+  const mapRef = useRef<google.maps.Map | null>(null)
+  const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
 
-  const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${center.latitude},${center.longitude}&zoom=20&size=1200x800&maptype=satellite&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-
-  // Load DSM (Digital Surface Model) data
+  // Load DSM (Digital Surface Model) layer
   useEffect(() => {
-    if (!isActive || !dsmUrl || !canvasRef.current) return
+    if (!isActive || !dataLayers) return
 
     const loadHeightData = async () => {
       try {
-        console.log('[HEIGHT-MAP] Loading DSM data from GeoTIFF...')
-        const dsmData = await fetchAndParseGeoTiff(dsmUrl)
+        console.log('[HEIGHT-MAP] Loading DSM layer...')
+        const layer = await getLayer('dsm', dataLayers)
 
-        // Convert DSM to height visualization with color gradient
-        const imageData = geoTiffToImageData(dsmData, 0.6)
+        // Get the canvas and convert to data URL
+        if (layer.canvases.length > 0) {
+          const canvas = layer.canvases[0]
+          setOverlayUrl(canvas.toDataURL())
 
-        // Render to canvas
-        const ctx = canvasRef.current?.getContext('2d')
-        if (ctx) {
-          ctx.putImageData(imageData, 0, 0)
+          // Extract min/max from palette
+          if (layer.palette) {
+            const minMatch = layer.palette.min.match(/([\d.]+)\s*m/)
+            const maxMatch = layer.palette.max.match(/([\d.]+)\s*m/)
+
+            if (minMatch && maxMatch) {
+              const min = parseFloat(minMatch[1])
+              const max = parseFloat(maxMatch[1])
+              const avg = (min + max) / 2
+
+              setHeightStats({ min, max, avg })
+            }
+          }
+
+          setHeightDataLoaded(true)
+          console.log('[HEIGHT-MAP] DSM layer loaded successfully')
         }
-
-        // Calculate height statistics
-        const data = dsmData.data
-        const sum = Array.from(data).reduce((acc, val) => acc + val, 0)
-        const avg = sum / data.length
-
-        setHeightStats({
-          min: dsmData.min,
-          max: dsmData.max,
-          avg
-        })
-
-        setHeightDataLoaded(true)
-        console.log('[HEIGHT-MAP] DSM data loaded:', {
-          min: dsmData.min.toFixed(1),
-          max: dsmData.max.toFixed(1),
-          avg: avg.toFixed(1)
-        })
       } catch (error) {
-        console.error('[HEIGHT-MAP] Failed to load DSM data:', error)
+        console.error('[HEIGHT-MAP] Failed to load DSM layer:', error)
         setHeightDataLoaded(false)
       }
     }
 
     loadHeightData()
-  }, [isActive, dsmUrl])
+  }, [isActive, dataLayers])
 
   // Auto-complete animation
   useEffect(() => {
-    if (!isActive || !mapLoaded) return
+    if (!isActive || !heightDataLoaded) return
 
     const timer = setTimeout(() => {
       onComplete()
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [isActive, mapLoaded, onComplete])
+  }, [isActive, heightDataLoaded, onComplete])
 
-  if (!dsmUrl) {
+  if (!dataLayers) {
     // Fallback: No DSM data available
     return (
       <motion.div
@@ -111,18 +107,16 @@ export default function HeightMapAnimation({
       {/* Main visualization */}
       <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
         {/* Satellite base layer */}
-        <img
-          src={mapUrl}
-          alt="Satellite view"
-          className="w-full h-full object-cover"
-          onLoad={() => setMapLoaded(true)}
-        />
+        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
+          <span>Map placeholder</span>
+        </div>
 
         {/* Height map overlay (DSM data) */}
-        {mapLoaded && dsmUrl && (
-          <motion.canvas
-            ref={canvasRef}
-            className="absolute inset-0 w-full h-full pointer-events-none"
+        {overlayUrl && (
+          <motion.img
+            src={overlayUrl}
+            alt="Height map overlay"
+            className="absolute inset-0 w-full h-full pointer-events-none object-cover"
             initial={{ opacity: 0 }}
             animate={{ opacity: heightDataLoaded ? 0.7 : 0 }}
             transition={{ duration: 1, delay: 0.3 }}

@@ -1,83 +1,65 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SunlightHeatmapProps } from './types'
-import { fetchAndParseGeoTiff, geoTiffToImageData } from '@/lib/utils/geotiff'
+import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
 
 export default function SunlightHeatmap({
   segments,
   center,
   onComplete,
   isActive,
-  annualFluxUrl
-}: SunlightHeatmapProps) {
+  dataLayers
+}: SunlightHeatmapProps & { dataLayers?: DataLayersResponse }) {
   const [heatmapOpacity, setHeatmapOpacity] = useState(0)
   const [showLegend, setShowLegend] = useState(false)
-  const [mapLoaded, setMapLoaded] = useState(false)
-  const [geoTiffLoaded, setGeoTiffLoaded] = useState(false)
+  const [fluxLoaded, setFluxLoaded] = useState(false)
+  const [overlayUrl, setOverlayUrl] = useState<string | null>(null)
   const [realDataStats, setRealDataStats] = useState<{ min: number; max: number; avg: number } | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${center.latitude},${center.longitude}&zoom=20&size=1200x800&maptype=satellite&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-
-  // Load real GeoTIFF data if available
+  // Load annual flux layer
   useEffect(() => {
-    if (!isActive || !annualFluxUrl || !canvasRef.current) return
+    if (!isActive || !dataLayers) return
 
-    const loadGeoTiff = async () => {
+    const loadAnnualFlux = async () => {
       try {
-        console.log('[HEATMAP] Loading real irradiation data from GeoTIFF...')
-        const geoTiffData = await fetchAndParseGeoTiff(annualFluxUrl)
+        console.log('[HEATMAP] Loading annual flux layer...')
+        const layer = await getLayer('annualFlux', dataLayers)
 
-        // Convert GeoTIFF to canvas ImageData
-        const imageData = geoTiffToImageData(geoTiffData, 0.7)
+        // Get the canvas and convert to data URL
+        if (layer.canvases.length > 0) {
+          const canvas = layer.canvases[0]
+          setOverlayUrl(canvas.toDataURL())
 
-        // Render to canvas
-        const ctx = canvasRef.current?.getContext('2d')
-        if (ctx) {
-          ctx.putImageData(imageData, 0, 0)
+          // Extract min/max from palette
+          if (layer.palette) {
+            const minMatch = layer.palette.min.match(/([\d]+)/)
+            const maxMatch = layer.palette.max.match(/([\d]+)/)
+
+            if (minMatch && maxMatch) {
+              const min = parseFloat(minMatch[1])
+              const max = parseFloat(maxMatch[1])
+              const avg = (min + max) / 2
+
+              setRealDataStats({ min, max, avg })
+            }
+          }
+
+          setFluxLoaded(true)
+          console.log('[HEATMAP] Annual flux layer loaded successfully')
         }
-
-        // Calculate statistics
-        const data = geoTiffData.data
-        const sum = Array.from(data).reduce((acc, val) => acc + val, 0)
-        const avg = sum / data.length
-
-        setRealDataStats({
-          min: geoTiffData.min,
-          max: geoTiffData.max,
-          avg
-        })
-
-        setGeoTiffLoaded(true)
-        console.log('[HEATMAP] Real irradiation data loaded:', { min: geoTiffData.min, max: geoTiffData.max, avg })
       } catch (error) {
-        console.error('[HEATMAP] Failed to load GeoTIFF:', error)
-        // Fallback to simulated visualization
-        setGeoTiffLoaded(false)
+        console.error('[HEATMAP] Failed to load annual flux layer:', error)
+        setFluxLoaded(false)
       }
     }
 
-    loadGeoTiff()
-  }, [isActive, annualFluxUrl])
-
-  // Timeout fallback if image doesn't load
-  useEffect(() => {
-    if (!isActive) return
-
-    const timeout = setTimeout(() => {
-      if (!mapLoaded) {
-        console.warn('Heatmap image failed to load, proceeding anyway')
-        setMapLoaded(true)
-      }
-    }, 3000) // Wait max 3 seconds for image
-
-    return () => clearTimeout(timeout)
-  }, [isActive, mapLoaded])
+    loadAnnualFlux()
+  }, [isActive, dataLayers])
 
   useEffect(() => {
-    if (!isActive || !mapLoaded) return
+    if (!isActive || !fluxLoaded) return
 
     // Animate heatmap appearance
     const timer1 = setTimeout(() => {
@@ -97,7 +79,7 @@ export default function SunlightHeatmap({
       clearTimeout(timer2)
       clearTimeout(timer3)
     }
-  }, [isActive, onComplete, mapLoaded])
+  }, [isActive, onComplete, fluxLoaded])
 
   // Get color for intensity value (kWh/m²/year)
   const getHeatmapColor = (intensity: number) => {
@@ -117,28 +99,26 @@ export default function SunlightHeatmap({
     >
       {/* Main heatmap visualization */}
       <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Satellite base layer */}
-        <img
-          src={mapUrl}
-          alt="Satellite view"
-          className="w-full h-full object-cover"
-          onLoad={() => setMapLoaded(true)}
-        />
+        {/* Base layer */}
+        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
+          <span>Map placeholder</span>
+        </div>
 
         {/* Real GeoTIFF heatmap overlay (if available) */}
-        {mapLoaded && annualFluxUrl && (
-          <motion.canvas
-            ref={canvasRef}
-            className="absolute inset-0 w-full h-full"
+        {overlayUrl && (
+          <motion.img
+            src={overlayUrl}
+            alt="Solar flux overlay"
+            className="absolute inset-0 w-full h-full pointer-events-none object-cover"
             initial={{ opacity: 0 }}
-            animate={{ opacity: geoTiffLoaded ? heatmapOpacity * 0.7 : 0 }}
+            animate={{ opacity: fluxLoaded ? heatmapOpacity * 0.7 : 0 }}
             transition={{ duration: 1 }}
             style={{ mixBlendMode: 'multiply' }}
           />
         )}
 
         {/* Fallback: Simulated heatmap overlay (if no real data) */}
-        {mapLoaded && !annualFluxUrl && (
+        {!dataLayers && (
           <motion.div
             className="absolute inset-0"
             initial={{ opacity: 0 }}
@@ -240,7 +220,7 @@ export default function SunlightHeatmap({
         )}
 
         {/* Real data badge */}
-        {annualFluxUrl && geoTiffLoaded && (
+        {dataLayers && fluxLoaded && (
           <motion.div
             className="absolute top-4 right-4 bg-emerald-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold"
             initial={{ opacity: 0, scale: 0.8 }}
@@ -252,7 +232,7 @@ export default function SunlightHeatmap({
         )}
 
         {/* Scanning effect */}
-        {mapLoaded && (
+        {fluxLoaded && (
           <motion.div
             className="absolute inset-0 pointer-events-none"
             initial={{ opacity: 0 }}
