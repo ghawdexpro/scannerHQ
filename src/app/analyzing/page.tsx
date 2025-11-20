@@ -73,10 +73,12 @@ function AnalyzingPageContent() {
 
       setAnalysisState(prev => ({ ...prev, progress: 30, message: 'Fetching solar data...' }))
 
-      const data: AnalyzeResponse = await response.json()
+      const data: any = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.analysis?.toString() || 'Analysis failed')
+        const errorMessage = data.message || data.error || 'Analysis failed'
+        console.error('[ANALYZING] API Error:', data)
+        throw new Error(errorMessage)
       }
 
       setAnalysisState(prev => ({ ...prev, progress: 50, message: 'Processing roof geometry...' }))
