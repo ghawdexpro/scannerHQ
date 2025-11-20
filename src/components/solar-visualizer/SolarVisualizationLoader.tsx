@@ -6,13 +6,11 @@ import dynamic from 'next/dynamic'
 import { SolarVisualizationLoaderProps, ANIMATION_STAGES } from './types'
 
 // Dynamically import animation components
-const RoofSegmentAnimation = dynamic(() => import('./RoofSegmentAnimation'), { ssr: false })
-const PanelPlacementAnimation = dynamic(() => import('./PanelPlacementAnimation'), { ssr: false })
+const HeightMapAnimation = dynamic(() => import('./HeightMapAnimation'), { ssr: false })
 const SunlightHeatmap = dynamic(() => import('./SunlightHeatmap'), { ssr: false })
 const ShadowPatternAnimation = dynamic(() => import('./ShadowPatternAnimation'), { ssr: false })
-const Building3DView = dynamic(() => import('./Building3DView'), { ssr: false })
 
-type AnimationStageId = 'satellite' | 'roof_detection' | 'sunlight_analysis' | 'shadow_patterns' | 'panel_placement' | '3d_render'
+type AnimationStageId = 'satellite' | 'height_map' | 'solar_flux' | 'shadow_patterns'
 
 export default function SolarVisualizationLoader({
   coordinates,
@@ -124,23 +122,23 @@ export default function SolarVisualizationLoader({
               />
             )}
 
-            {/* Stage 2: Roof Detection Animation */}
-            {currentStageId === 'roof_detection' && (
-              <RoofSegmentAnimation
-                key="roof_detection"
-                segments={visualizationData.roofSegments}
-                center={visualizationData.buildingCenter}
+            {/* Stage 2: Height Map (DSM) */}
+            {currentStageId === 'height_map' && (
+              <HeightMapAnimation
+                key="height_map"
+                center={visualizationData.pinLocation}
+                dsmUrl={visualizationData.dataLayers?.dsmUrl}
                 onComplete={handleStageComplete}
                 isActive={true}
               />
             )}
 
-            {/* Stage 3: Sunlight Analysis */}
-            {currentStageId === 'sunlight_analysis' && (
+            {/* Stage 3: Solar Flux (Irradiation) */}
+            {currentStageId === 'solar_flux' && (
               <SunlightHeatmap
-                key="sunlight_analysis"
+                key="solar_flux"
                 segments={visualizationData.roofSegments}
-                center={visualizationData.buildingCenter}
+                center={visualizationData.pinLocation}
                 annualFluxUrl={visualizationData.dataLayers?.annualFluxUrl}
                 onComplete={handleStageComplete}
                 isActive={true}
@@ -153,30 +151,6 @@ export default function SolarVisualizationLoader({
                 key="shadow_patterns"
                 center={visualizationData.pinLocation}
                 shadowPatterns={visualizationData.dataLayers?.shadowPatterns}
-                onComplete={handleStageComplete}
-                isActive={true}
-              />
-            )}
-
-            {/* Stage 5: Panel Placement */}
-            {currentStageId === 'panel_placement' && (
-              <PanelPlacementAnimation
-                key="panel_placement"
-                segments={visualizationData.roofSegments}
-                totalPanels={visualizationData.maxPanels}
-                panelDimensions={visualizationData.panelDimensions}
-                center={visualizationData.buildingCenter}
-                onComplete={handleStageComplete}
-                isActive={true}
-              />
-            )}
-
-            {/* Stage 6: 3D Render */}
-            {currentStageId === '3d_render' && (
-              <Building3DView
-                key="3d_render"
-                visualizationData={visualizationData}
-                coordinates={coordinates}
                 onComplete={handleStageComplete}
                 isActive={true}
               />

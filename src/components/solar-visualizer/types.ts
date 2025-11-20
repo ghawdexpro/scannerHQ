@@ -21,39 +21,27 @@ export interface AnimationStage {
 export const ANIMATION_STAGES: AnimationStage[] = [
   {
     id: 'satellite',
-    name: 'Loading Satellite View',
+    name: 'Loading Location',
     duration: 2000,
-    description: 'Fetching satellite imagery of your property'
+    description: 'Loading satellite view at pin location'
   },
   {
-    id: 'roof_detection',
-    name: 'Detecting Roof Segments',
+    id: 'height_map',
+    name: 'Height Analysis',
     duration: 3000,
-    description: 'Analyzing roof geometry and orientation'
+    description: 'Mapping building elevation and structure'
   },
   {
-    id: 'sunlight_analysis',
-    name: 'Analyzing Sunlight',
-    duration: 2500,
-    description: 'Calculating solar irradiance patterns'
+    id: 'solar_flux',
+    name: 'Solar Irradiation',
+    duration: 3000,
+    description: 'Real annual solar energy data'
   },
   {
     id: 'shadow_patterns',
     name: 'Shadow Analysis',
-    duration: 4200,
-    description: 'Analyzing seasonal shadow patterns'
-  },
-  {
-    id: 'panel_placement',
-    name: 'Placing Solar Panels',
     duration: 4000,
-    description: 'Optimizing panel configuration'
-  },
-  {
-    id: '3d_render',
-    name: '3D Visualization',
-    duration: 3500,
-    description: 'Rendering 3D model of your solar installation'
+    description: 'Seasonal shadow patterns (summer/winter/equinox)'
   }
 ]
 
