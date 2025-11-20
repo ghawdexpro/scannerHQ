@@ -28,6 +28,20 @@ export default function PanelPlacementAnimation({
   // Cap panels at reasonable number for Malta (typically 37 panels for 15kWp)
   const cappedPanels = Math.min(totalPanels, 40)
 
+  // Timeout fallback if image doesn't load
+  useEffect(() => {
+    if (!isActive) return
+
+    const timeout = setTimeout(() => {
+      if (!mapLoaded) {
+        console.warn('Panel placement image failed to load, proceeding anyway')
+        setMapLoaded(true)
+      }
+    }, 3000) // Wait max 3 seconds for image
+
+    return () => clearTimeout(timeout)
+  }, [isActive, mapLoaded])
+
   // Calculate panel layout across segments
   useEffect(() => {
     if (!isActive || !mapLoaded) return
