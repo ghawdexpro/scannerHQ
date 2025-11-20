@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
+import { loadLibrary } from '@/lib/google/maps-service'
 
 export interface HeightMapAnimationProps {
   center: { latitude: number; longitude: number }
@@ -19,6 +20,7 @@ export default function HeightMapAnimation({
 }: HeightMapAnimationProps) {
   const [heightDataLoaded, setHeightDataLoaded] = useState(false)
   const [heightStats, setHeightStats] = useState<{ min: number; max: number; avg: number } | null>(null)
+  const [isMapLoaded, setIsMapLoaded] = useState(false)
   const mapRef = useRef<google.maps.Map | null>(null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
@@ -27,27 +29,39 @@ export default function HeightMapAnimation({
   useEffect(() => {
     if (!isActive || !mapDivRef.current || mapRef.current) return
 
-    console.log('[HEIGHT-MAP] Initializing Google Map...')
+    const initMap = async () => {
+      try {
+        console.log('[HEIGHT-MAP] Loading Google Maps library...')
+        await loadLibrary('maps')
 
-    mapRef.current = new google.maps.Map(mapDivRef.current, {
-      center: { lat: center.latitude, lng: center.longitude },
-      zoom: 20,
-      mapTypeId: 'satellite',
-      disableDefaultUI: true,
-      zoomControl: false,
-      mapTypeControl: false,
-      scaleControl: false,
-      streetViewControl: false,
-      rotateControl: false,
-      fullscreenControl: false,
-    })
+        console.log('[HEIGHT-MAP] Initializing Google Map...')
 
-    console.log('[HEIGHT-MAP] Google Map initialized')
+        mapRef.current = new google.maps.Map(mapDivRef.current!, {
+          center: { lat: center.latitude, lng: center.longitude },
+          zoom: 20,
+          mapTypeId: 'satellite',
+          disableDefaultUI: true,
+          zoomControl: false,
+          mapTypeControl: false,
+          scaleControl: false,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+        })
+
+        setIsMapLoaded(true)
+        console.log('[HEIGHT-MAP] Google Map initialized successfully')
+      } catch (error) {
+        console.error('[HEIGHT-MAP] Failed to initialize Google Map:', error)
+      }
+    }
+
+    initMap()
   }, [isActive, center])
 
   // Load DSM (Digital Surface Model) layer
   useEffect(() => {
-    if (!isActive || !dataLayers || !mapRef.current) return
+    if (!isActive || !dataLayers || !mapRef.current || !isMapLoaded) return
 
     const loadHeightData = async () => {
       try {
@@ -104,7 +118,7 @@ export default function HeightMapAnimation({
         overlayRef.current.setMap(null)
       }
     }
-  }, [isActive, dataLayers])
+  }, [isActive, dataLayers, isMapLoaded])
 
   // Auto-complete animation
   useEffect(() => {

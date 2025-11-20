@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
+import { loadLibrary } from '@/lib/google/maps-service'
 
 export interface ShadowPatternAnimationProps {
   center: { latitude: number; longitude: number }
@@ -21,6 +22,7 @@ export default function ShadowPatternAnimation({
   const [shadowsLoaded, setShadowsLoaded] = useState(false)
   const [overlayDataUrls, setOverlayDataUrls] = useState<string[]>([])
   const [bounds, setBounds] = useState<google.maps.LatLngBoundsLiteral | null>(null)
+  const [isMapLoaded, setIsMapLoaded] = useState(false)
   const mapRef = useRef<google.maps.Map | null>(null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
@@ -29,27 +31,39 @@ export default function ShadowPatternAnimation({
   useEffect(() => {
     if (!isActive || !mapDivRef.current || mapRef.current) return
 
-    console.log('[SHADOWS] Initializing Google Map...')
+    const initMap = async () => {
+      try {
+        console.log('[SHADOWS] Loading Google Maps library...')
+        await loadLibrary('maps')
 
-    mapRef.current = new google.maps.Map(mapDivRef.current, {
-      center: { lat: center.latitude, lng: center.longitude },
-      zoom: 20,
-      mapTypeId: 'satellite',
-      disableDefaultUI: true,
-      zoomControl: false,
-      mapTypeControl: false,
-      scaleControl: false,
-      streetViewControl: false,
-      rotateControl: false,
-      fullscreenControl: false,
-    })
+        console.log('[SHADOWS] Initializing Google Map...')
 
-    console.log('[SHADOWS] Google Map initialized')
+        mapRef.current = new google.maps.Map(mapDivRef.current!, {
+          center: { lat: center.latitude, lng: center.longitude },
+          zoom: 20,
+          mapTypeId: 'satellite',
+          disableDefaultUI: true,
+          zoomControl: false,
+          mapTypeControl: false,
+          scaleControl: false,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+        })
+
+        setIsMapLoaded(true)
+        console.log('[SHADOWS] Google Map initialized successfully')
+      } catch (error) {
+        console.error('[SHADOWS] Failed to initialize Google Map:', error)
+      }
+    }
+
+    initMap()
   }, [isActive, center])
 
   // Load hourly shade layer
   useEffect(() => {
-    if (!isActive || !dataLayers || !mapRef.current) return
+    if (!isActive || !dataLayers || !mapRef.current || !isMapLoaded) return
 
     const loadShadows = async () => {
       try {
@@ -69,7 +83,7 @@ export default function ShadowPatternAnimation({
     }
 
     loadShadows()
-  }, [isActive, dataLayers])
+  }, [isActive, dataLayers, isMapLoaded])
 
   // Animate through hours
   useEffect(() => {

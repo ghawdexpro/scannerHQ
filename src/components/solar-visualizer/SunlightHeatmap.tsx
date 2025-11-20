@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { SunlightHeatmapProps } from './types'
 import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
+import { loadLibrary } from '@/lib/google/maps-service'
 
 export default function SunlightHeatmap({
   segments,
@@ -16,6 +17,7 @@ export default function SunlightHeatmap({
   const [showLegend, setShowLegend] = useState(false)
   const [fluxLoaded, setFluxLoaded] = useState(false)
   const [realDataStats, setRealDataStats] = useState<{ min: number; max: number; avg: number } | null>(null)
+  const [isMapLoaded, setIsMapLoaded] = useState(false)
   const mapRef = useRef<google.maps.Map | null>(null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
@@ -24,27 +26,39 @@ export default function SunlightHeatmap({
   useEffect(() => {
     if (!isActive || !mapDivRef.current || mapRef.current) return
 
-    console.log('[HEATMAP] Initializing Google Map...')
+    const initMap = async () => {
+      try {
+        console.log('[HEATMAP] Loading Google Maps library...')
+        await loadLibrary('maps')
 
-    mapRef.current = new google.maps.Map(mapDivRef.current, {
-      center: { lat: center.latitude, lng: center.longitude },
-      zoom: 20,
-      mapTypeId: 'satellite',
-      disableDefaultUI: true,
-      zoomControl: false,
-      mapTypeControl: false,
-      scaleControl: false,
-      streetViewControl: false,
-      rotateControl: false,
-      fullscreenControl: false,
-    })
+        console.log('[HEATMAP] Initializing Google Map...')
 
-    console.log('[HEATMAP] Google Map initialized')
+        mapRef.current = new google.maps.Map(mapDivRef.current!, {
+          center: { lat: center.latitude, lng: center.longitude },
+          zoom: 20,
+          mapTypeId: 'satellite',
+          disableDefaultUI: true,
+          zoomControl: false,
+          mapTypeControl: false,
+          scaleControl: false,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+        })
+
+        setIsMapLoaded(true)
+        console.log('[HEATMAP] Google Map initialized successfully')
+      } catch (error) {
+        console.error('[HEATMAP] Failed to initialize Google Map:', error)
+      }
+    }
+
+    initMap()
   }, [isActive, center])
 
   // Load annual flux layer
   useEffect(() => {
-    if (!isActive || !dataLayers || !mapRef.current) return
+    if (!isActive || !dataLayers || !mapRef.current || !isMapLoaded) return
 
     const loadAnnualFlux = async () => {
       try {
@@ -101,7 +115,7 @@ export default function SunlightHeatmap({
         overlayRef.current.setMap(null)
       }
     }
-  }, [isActive, dataLayers])
+  }, [isActive, dataLayers, isMapLoaded])
 
   useEffect(() => {
     if (!isActive || !fluxLoaded) return
