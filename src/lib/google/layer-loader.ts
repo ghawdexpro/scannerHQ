@@ -21,12 +21,23 @@ export interface Layer {
 }
 
 export interface DataLayersResponse {
-  maskUrl: string
+  imageryDate: {
+    year: number
+    month: number
+    day: number
+  }
+  imageryProcessedDate: {
+    year: number
+    month: number
+    day: number
+  }
   dsmUrl: string
   rgbUrl: string
+  maskUrl: string
   annualFluxUrl: string
   monthlyFluxUrl: string
   hourlyShadeUrls: string[]
+  imageryQuality: 'HIGH' | 'MEDIUM' | 'BASE'
 }
 
 /**

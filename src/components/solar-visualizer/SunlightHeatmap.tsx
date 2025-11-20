@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { SunlightHeatmapProps } from './types'
 import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
@@ -15,22 +15,60 @@ export default function SunlightHeatmap({
   const [heatmapOpacity, setHeatmapOpacity] = useState(0)
   const [showLegend, setShowLegend] = useState(false)
   const [fluxLoaded, setFluxLoaded] = useState(false)
-  const [overlayUrl, setOverlayUrl] = useState<string | null>(null)
   const [realDataStats, setRealDataStats] = useState<{ min: number; max: number; avg: number } | null>(null)
+  const mapRef = useRef<google.maps.Map | null>(null)
+  const mapDivRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
+
+  // Initialize Google Map
+  useEffect(() => {
+    if (!isActive || !mapDivRef.current || mapRef.current) return
+
+    console.log('[HEATMAP] Initializing Google Map...')
+
+    mapRef.current = new google.maps.Map(mapDivRef.current, {
+      center: { lat: center.latitude, lng: center.longitude },
+      zoom: 20,
+      mapTypeId: 'satellite',
+      disableDefaultUI: true,
+      zoomControl: false,
+      mapTypeControl: false,
+      scaleControl: false,
+      streetViewControl: false,
+      rotateControl: false,
+      fullscreenControl: false,
+    })
+
+    console.log('[HEATMAP] Google Map initialized')
+  }, [isActive, center])
 
   // Load annual flux layer
   useEffect(() => {
-    if (!isActive || !dataLayers) return
+    if (!isActive || !dataLayers || !mapRef.current) return
 
     const loadAnnualFlux = async () => {
       try {
         console.log('[HEATMAP] Loading annual flux layer...')
         const layer = await getLayer('annualFlux', dataLayers)
 
-        // Get the canvas and convert to data URL
-        if (layer.canvases.length > 0) {
+        // Remove existing overlay
+        if (overlayRef.current) {
+          overlayRef.current.setMap(null)
+        }
+
+        // Create GroundOverlay from canvas
+        if (layer.canvases.length > 0 && mapRef.current) {
           const canvas = layer.canvases[0]
-          setOverlayUrl(canvas.toDataURL())
+          const dataUrl = canvas.toDataURL()
+
+          const groundOverlay = new google.maps.GroundOverlay(
+            dataUrl,
+            layer.bounds,
+            { opacity: 0.7 }
+          )
+
+          groundOverlay.setMap(mapRef.current)
+          overlayRef.current = groundOverlay
 
           // Extract min/max from palette
           if (layer.palette) {
@@ -56,6 +94,13 @@ export default function SunlightHeatmap({
     }
 
     loadAnnualFlux()
+
+    // Cleanup
+    return () => {
+      if (overlayRef.current) {
+        overlayRef.current.setMap(null)
+      }
+    }
   }, [isActive, dataLayers])
 
   useEffect(() => {
@@ -99,23 +144,8 @@ export default function SunlightHeatmap({
     >
       {/* Main heatmap visualization */}
       <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Base layer */}
-        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
-          <span>Map placeholder</span>
-        </div>
-
-        {/* Real GeoTIFF heatmap overlay (if available) */}
-        {overlayUrl && (
-          <motion.img
-            src={overlayUrl}
-            alt="Solar flux overlay"
-            className="absolute inset-0 w-full h-full pointer-events-none object-cover"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: fluxLoaded ? heatmapOpacity * 0.7 : 0 }}
-            transition={{ duration: 1 }}
-            style={{ mixBlendMode: 'multiply' }}
-          />
-        )}
+        {/* Google Map */}
+        <div ref={mapDivRef} className="w-full h-full" />
 
         {/* Fallback: Simulated heatmap overlay (if no real data) */}
         {!dataLayers && (
@@ -222,7 +252,7 @@ export default function SunlightHeatmap({
         {/* Real data badge */}
         {dataLayers && fluxLoaded && (
           <motion.div
-            className="absolute top-4 right-4 bg-emerald-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold"
+            className="absolute top-4 right-4 bg-emerald-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold z-10"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1 }}
@@ -234,7 +264,7 @@ export default function SunlightHeatmap({
         {/* Scanning effect */}
         {fluxLoaded && (
           <motion.div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0 pointer-events-none z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.3, 0] }}
             transition={{ duration: 2, repeat: Infinity }}

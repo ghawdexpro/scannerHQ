@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getLayer, type DataLayersResponse } from '@/lib/google/layer-loader'
 
@@ -19,11 +19,37 @@ export default function ShadowPatternAnimation({
 }: ShadowPatternAnimationProps) {
   const [currentHour, setCurrentHour] = useState(0)
   const [shadowsLoaded, setShadowsLoaded] = useState(false)
-  const [overlayUrls, setOverlayUrls] = useState<string[]>([])
+  const [overlayDataUrls, setOverlayDataUrls] = useState<string[]>([])
+  const [bounds, setBounds] = useState<google.maps.LatLngBoundsLiteral | null>(null)
+  const mapRef = useRef<google.maps.Map | null>(null)
+  const mapDivRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
+
+  // Initialize Google Map
+  useEffect(() => {
+    if (!isActive || !mapDivRef.current || mapRef.current) return
+
+    console.log('[SHADOWS] Initializing Google Map...')
+
+    mapRef.current = new google.maps.Map(mapDivRef.current, {
+      center: { lat: center.latitude, lng: center.longitude },
+      zoom: 20,
+      mapTypeId: 'satellite',
+      disableDefaultUI: true,
+      zoomControl: false,
+      mapTypeControl: false,
+      scaleControl: false,
+      streetViewControl: false,
+      rotateControl: false,
+      fullscreenControl: false,
+    })
+
+    console.log('[SHADOWS] Google Map initialized')
+  }, [isActive, center])
 
   // Load hourly shade layer
   useEffect(() => {
-    if (!isActive || !dataLayers) return
+    if (!isActive || !dataLayers || !mapRef.current) return
 
     const loadShadows = async () => {
       try {
@@ -32,7 +58,8 @@ export default function ShadowPatternAnimation({
 
         // Convert all canvases to data URLs (5 hours: 5AM, 8AM, noon, 4PM, 8PM)
         const urls = layer.canvases.map(canvas => canvas.toDataURL())
-        setOverlayUrls(urls)
+        setOverlayDataUrls(urls)
+        setBounds(layer.bounds)
         setShadowsLoaded(true)
         console.log('[SHADOWS] Loaded', urls.length, 'hourly shade frames')
       } catch (error) {
@@ -46,11 +73,11 @@ export default function ShadowPatternAnimation({
 
   // Animate through hours
   useEffect(() => {
-    if (!isActive || !shadowsLoaded || overlayUrls.length === 0) return
+    if (!isActive || !shadowsLoaded || overlayDataUrls.length === 0) return
 
     const interval = setInterval(() => {
       setCurrentHour(prev => {
-        if (prev >= overlayUrls.length - 1) {
+        if (prev >= overlayDataUrls.length - 1) {
           clearInterval(interval)
           setTimeout(() => onComplete(), 500)
           return prev
@@ -60,7 +87,34 @@ export default function ShadowPatternAnimation({
     }, 800) // Change frame every 800ms
 
     return () => clearInterval(interval)
-  }, [isActive, shadowsLoaded, overlayUrls.length, onComplete])
+  }, [isActive, shadowsLoaded, overlayDataUrls.length, onComplete])
+
+  // Update overlay when hour changes
+  useEffect(() => {
+    if (!mapRef.current || !overlayDataUrls[currentHour] || !bounds) return
+
+    // Remove existing overlay
+    if (overlayRef.current) {
+      overlayRef.current.setMap(null)
+    }
+
+    // Create new overlay for current hour
+    const groundOverlay = new google.maps.GroundOverlay(
+      overlayDataUrls[currentHour],
+      bounds,
+      { opacity: 0.8 }
+    )
+
+    groundOverlay.setMap(mapRef.current)
+    overlayRef.current = groundOverlay
+
+    // Cleanup
+    return () => {
+      if (overlayRef.current) {
+        overlayRef.current.setMap(null)
+      }
+    }
+  }, [currentHour, overlayDataUrls, bounds])
 
   const hourLabels = ['5AM', '8AM', '12PM', '4PM', '8PM']
 
@@ -95,33 +149,14 @@ export default function ShadowPatternAnimation({
     >
       {/* Main visualization */}
       <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Base layer */}
-        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
-          <span>Map placeholder</span>
-        </div>
-
-        {/* Shadow overlays - animate through hours */}
-        <AnimatePresence mode="wait">
-          {shadowsLoaded && overlayUrls[currentHour] && (
-            <motion.img
-              key={`hour-${currentHour}`}
-              src={overlayUrls[currentHour]}
-              alt={`Shadow pattern at ${hourLabels[currentHour]}`}
-              className="absolute inset-0 w-full h-full pointer-events-none object-cover"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.8 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              style={{ mixBlendMode: 'multiply' }}
-            />
-          )}
-        </AnimatePresence>
+        {/* Google Map */}
+        <div ref={mapDivRef} className="w-full h-full" />
 
         {/* Hour indicator overlay */}
         {shadowsLoaded && (
           <motion.div
             key={`label-${currentHour}`}
-            className="absolute bottom-6 left-6 right-6"
+            className="absolute bottom-6 left-6 right-6 z-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -141,7 +176,7 @@ export default function ShadowPatternAnimation({
 
         {/* Real data badge */}
         <motion.div
-          className="absolute top-4 right-4 bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold"
+          className="absolute top-4 right-4 bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold z-10"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}

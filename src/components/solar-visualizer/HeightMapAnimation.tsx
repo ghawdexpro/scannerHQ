@@ -17,26 +17,61 @@ export default function HeightMapAnimation({
   onComplete,
   isActive
 }: HeightMapAnimationProps) {
-  const [mapLoaded, setMapLoaded] = useState(false)
   const [heightDataLoaded, setHeightDataLoaded] = useState(false)
   const [heightStats, setHeightStats] = useState<{ min: number; max: number; avg: number } | null>(null)
-  const [overlayUrl, setOverlayUrl] = useState<string | null>(null)
   const mapRef = useRef<google.maps.Map | null>(null)
+  const mapDivRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<google.maps.GroundOverlay | null>(null)
+
+  // Initialize Google Map
+  useEffect(() => {
+    if (!isActive || !mapDivRef.current || mapRef.current) return
+
+    console.log('[HEIGHT-MAP] Initializing Google Map...')
+
+    mapRef.current = new google.maps.Map(mapDivRef.current, {
+      center: { lat: center.latitude, lng: center.longitude },
+      zoom: 20,
+      mapTypeId: 'satellite',
+      disableDefaultUI: true,
+      zoomControl: false,
+      mapTypeControl: false,
+      scaleControl: false,
+      streetViewControl: false,
+      rotateControl: false,
+      fullscreenControl: false,
+    })
+
+    console.log('[HEIGHT-MAP] Google Map initialized')
+  }, [isActive, center])
 
   // Load DSM (Digital Surface Model) layer
   useEffect(() => {
-    if (!isActive || !dataLayers) return
+    if (!isActive || !dataLayers || !mapRef.current) return
 
     const loadHeightData = async () => {
       try {
         console.log('[HEIGHT-MAP] Loading DSM layer...')
         const layer = await getLayer('dsm', dataLayers)
 
-        // Get the canvas and convert to data URL
-        if (layer.canvases.length > 0) {
+        // Remove existing overlay
+        if (overlayRef.current) {
+          overlayRef.current.setMap(null)
+        }
+
+        // Create GroundOverlay from canvas
+        if (layer.canvases.length > 0 && mapRef.current) {
           const canvas = layer.canvases[0]
-          setOverlayUrl(canvas.toDataURL())
+          const dataUrl = canvas.toDataURL()
+
+          const groundOverlay = new google.maps.GroundOverlay(
+            dataUrl,
+            layer.bounds,
+            { opacity: 0.7 }
+          )
+
+          groundOverlay.setMap(mapRef.current)
+          overlayRef.current = groundOverlay
 
           // Extract min/max from palette
           if (layer.palette) {
@@ -62,6 +97,13 @@ export default function HeightMapAnimation({
     }
 
     loadHeightData()
+
+    // Cleanup
+    return () => {
+      if (overlayRef.current) {
+        overlayRef.current.setMap(null)
+      }
+    }
   }, [isActive, dataLayers])
 
   // Auto-complete animation
@@ -106,27 +148,12 @@ export default function HeightMapAnimation({
     >
       {/* Main visualization */}
       <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-        {/* Satellite base layer */}
-        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
-          <span>Map placeholder</span>
-        </div>
-
-        {/* Height map overlay (DSM data) */}
-        {overlayUrl && (
-          <motion.img
-            src={overlayUrl}
-            alt="Height map overlay"
-            className="absolute inset-0 w-full h-full pointer-events-none object-cover"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: heightDataLoaded ? 0.7 : 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            style={{ mixBlendMode: 'multiply' }}
-          />
-        )}
+        {/* Google Map */}
+        <div ref={mapDivRef} className="w-full h-full" />
 
         {/* Real data badge */}
         <motion.div
-          className="absolute top-4 right-4 bg-purple-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold"
+          className="absolute top-4 right-4 bg-purple-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold z-10"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
@@ -135,9 +162,9 @@ export default function HeightMapAnimation({
         </motion.div>
 
         {/* Scanning line effect */}
-        {mapLoaded && (
+        {heightDataLoaded && (
           <motion.div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0 pointer-events-none z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.3, 0] }}
             transition={{ duration: 2, repeat: 2 }}
