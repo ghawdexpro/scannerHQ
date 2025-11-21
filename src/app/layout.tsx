@@ -129,7 +129,8 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
-        <InstallPrompt />
+        {/* TODO: Re-enable InstallPrompt when building standalone app */}
+        {/* <InstallPrompt /> */}
         <Toaster
           position="bottom-center"
           toastOptions={{
