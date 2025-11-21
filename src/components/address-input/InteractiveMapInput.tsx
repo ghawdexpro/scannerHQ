@@ -217,16 +217,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
     const lat = latLng.lat()
     const lng = latLng.lng()
 
-    // GUARD 1: Defer if map not idle
-    if (!isMapIdleRef.current) {
-      google.maps.event.addListenerOnce(mapInstance, 'idle', () => {
-        const deferredLatLng = new google.maps.LatLng(lat, lng)
-        handleMapClick(deferredLatLng, mapInstance)
-      })
-      return
-    }
-
-    // GUARD 2: Validate coordinates
+    // GUARD 1: Validate coordinates first (no idle check needed for validation)
     if (!isValidCoordinate(lat, lng)) {
       toast.error(ERROR_MESSAGES.INVALID_ADDRESS, { duration: 2000 })
       return
@@ -235,15 +226,17 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
     // Get current zoom level
     const currentZoom = mapInstance.getZoom() || 11
 
-    // GUARD 3: If not zoomed in enough, increment zoom
+    // GUARD 2: If not zoomed in enough, execute zoom immediately
+    // Zoom operations don't need to wait for map idle state
     // Use smaller increment (+1) on first click from initial view to minimize center-zoom damage
     if (currentZoom < 18) {
       const zoomIncrement = currentZoom === 11 ? 1 : 3
       const nextZoom = Math.min(currentZoom + zoomIncrement, 21)
-      mapInstance.setOptions({
-        center: { lat, lng },
-        zoom: nextZoom
-      })
+
+      // Use atomic operations for reliable zoom-to-location on all browsers
+      mapInstance.setCenter({ lat, lng })
+      mapInstance.setZoom(nextZoom)
+
       toast('Zoom in closer to select your exact property', {
         id: 'zoom-prompt',
         icon: '🔍',
@@ -252,7 +245,17 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       return
     }
 
-    // GUARD 4: We're zoomed in enough (zoom >= 18) - place pin and geocode
+    // GUARD 3: For geocoding (zoom >= 18), defer if map not idle
+    // Complex async operations should wait for stable map state
+    if (!isMapIdleRef.current) {
+      google.maps.event.addListenerOnce(mapInstance, 'idle', () => {
+        const deferredLatLng = new google.maps.LatLng(lat, lng)
+        handleMapClick(deferredLatLng, mapInstance)
+      })
+      return
+    }
+
+    // GUARD 4: We're zoomed in enough (zoom >= 18) and map is idle - place pin and geocode
     setIsValidating(true)
 
     try {
