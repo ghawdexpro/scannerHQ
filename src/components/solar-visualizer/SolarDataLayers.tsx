@@ -216,6 +216,10 @@ export default function SolarDataLayers({
         hourlyShadeUrlsCount: dataLayersResponse.hourlyShadeUrls?.length || 0,
       })
 
+      // Clear old overlays IMMEDIATELY before loading new layer
+      console.log('[SolarDataLayers] Clearing old overlays before load...')
+      clearOverlays()
+
       const layer = await getOrLoadLayer(selectedLayerId as LayerId, selectedDayOfYear)
 
       if (!layer) {
@@ -231,10 +235,6 @@ export default function SolarDataLayers({
         hasPalette: !!layer.palette,
         fromCache: layerCacheRef.current.has(`${layer.id}-${selectedDayOfYear || 0}`)
       })
-
-      // Clear old overlays
-      console.log('[SolarDataLayers] Clearing old overlays...')
-      clearOverlays()
 
       // Create new overlays
       console.log('[SolarDataLayers] Creating', layer.canvases.length, 'new overlay(s)...')
