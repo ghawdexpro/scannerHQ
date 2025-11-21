@@ -418,11 +418,16 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
       return `${displayHour}:00 ${period}`
     }
 
-    // Set up hour change callback when ref is ready
+    // Set up hour and month change callbacks when ref is ready
     useEffect(() => {
       if (solarDataLayersRef.current?.setOnHourChange) {
         solarDataLayersRef.current.setOnHourChange((hour: number) => {
           setCurrentHour(hour)
+        })
+      }
+      if (solarDataLayersRef.current?.setOnMonthChange) {
+        solarDataLayersRef.current.setOnMonthChange((month: number) => {
+          setCurrentMonth(month)
         })
       }
     }, [])
