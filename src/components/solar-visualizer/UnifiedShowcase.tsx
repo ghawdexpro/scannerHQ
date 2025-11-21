@@ -138,6 +138,9 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
       },
     }))
 
+    // State for tracking current loading layer
+    const [currentLoadingLayer, setCurrentLoadingLayer] = useState('')
+
     // Initialize map
     useEffect(() => {
       const initMap = async () => {
@@ -172,6 +175,18 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
       initMap()
     }, [coordinates])
 
+    // Auto-start showcase when map and dataLayers are ready
+    useEffect(() => {
+      if (map && dataLayers && !isActive && !isLoading) {
+        console.log('[UnifiedShowcase] Auto-starting showcase...')
+        const timeoutId = setTimeout(() => {
+          startPreloading()
+        }, 500)
+
+        return () => clearTimeout(timeoutId)
+      }
+    }, [map, dataLayers, isActive, isLoading])
+
     // Pre-load all 7 layers upfront
     const startPreloading = async () => {
       if (!dataLayers || !map) {
@@ -197,9 +212,10 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
           { layerId: 'hourlyShade', dayOfYear: 355, cacheKey: 'hourlyShade-355' },
         ]
 
-        // Load all layers in parallel
+        // Load all layers in parallel, but continue even if some fail
         const loadPromises = layersToLoad.map(async ({ layerId, dayOfYear, cacheKey }) => {
           try {
+            setCurrentLoadingLayer(cacheKey)
             console.log('[UnifiedShowcase] Loading layer:', cacheKey)
             const layer = await getLayer(layerId, dataLayers, {
               dayOfYear,
@@ -210,14 +226,27 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
 
             // Update progress
             setLoadingProgress((prev) => Math.min(prev + 100 / layersToLoad.length, 100))
+
+            return { success: true, cacheKey }
           } catch (error) {
             console.error('[UnifiedShowcase] ❌ Failed to load layer:', cacheKey, error)
-            throw error
+            // Update progress anyway so we don't get stuck
+            setLoadingProgress((prev) => Math.min(prev + 100 / layersToLoad.length, 100))
+            return { success: false, cacheKey, error }
           }
         })
 
-        // Wait for all loads to complete
-        await Promise.all(loadPromises)
+        // Wait for all loads to complete (even if some fail)
+        const results = await Promise.allSettled(loadPromises)
+
+        // Check results and log any failures
+        const failed = results
+          .map((r, i) => r.status === 'rejected' ? layersToLoad[i].cacheKey : null)
+          .filter(Boolean)
+
+        if (failed.length > 0) {
+          console.warn('[UnifiedShowcase] ⚠️ Some layers failed to load:', failed)
+        }
 
         console.log('[UnifiedShowcase] ✅ All layers pre-loaded successfully!')
         console.log('[UnifiedShowcase] Cache contents:', {
@@ -403,7 +432,7 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
         {/* Loading spinner during pre-load phase */}
         {isLoading && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-2xl p-8 text-center">
+            <div className="bg-white rounded-xl shadow-2xl p-8 text-center max-w-sm">
               <div className="mb-4">
                 <div className="inline-block">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -411,6 +440,11 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">Loading Showcase</h3>
               <p className="text-gray-600 mb-4">Preparing all layers for smooth playback...</p>
+              {currentLoadingLayer && (
+                <p className="text-xs text-blue-600 mb-3 font-mono">
+                  Loading: <span className="font-semibold">{currentLoadingLayer}</span>
+                </p>
+              )}
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-200"
