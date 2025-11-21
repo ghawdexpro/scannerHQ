@@ -235,9 +235,11 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
     // Get current zoom level
     const currentZoom = mapInstance.getZoom() || 11
 
-    // GUARD 3: If not zoomed in enough, increment zoom by 3
+    // GUARD 3: If not zoomed in enough, increment zoom
+    // Use smaller increment (+1) on first click from initial view to minimize center-zoom damage
     if (currentZoom < 18) {
-      const nextZoom = Math.min(currentZoom + 3, 21)
+      const zoomIncrement = currentZoom === 11 ? 1 : 3
+      const nextZoom = Math.min(currentZoom + zoomIncrement, 21)
       mapInstance.setOptions({
         center: { lat, lng },
         zoom: nextZoom
