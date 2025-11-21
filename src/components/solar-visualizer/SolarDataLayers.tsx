@@ -353,9 +353,9 @@ export default function SolarDataLayers({
         { id: 'mask' },
         { id: 'dsm' },
         { id: 'monthlyFlux' },
-        { id: 'hourlyShade', dayOfYear: 265 }, // Next from summer is equinox
-        { id: 'hourlyShade', dayOfYear: 355 }, // Next from equinox is winter
-        { id: 'hourlyShade', dayOfYear: 172 }, // Next from winter is back to summer (but then DSM)
+        { id: 'hourlyShade', dayOfYear: 172 }, // Summer Solstice (step 4)
+        { id: 'hourlyShade', dayOfYear: 265 }, // Fall Equinox (step 5)
+        { id: 'hourlyShade', dayOfYear: 355 }, // Winter Solstice (step 6)
         { id: 'dsm' }, // Final step
       ]
 
