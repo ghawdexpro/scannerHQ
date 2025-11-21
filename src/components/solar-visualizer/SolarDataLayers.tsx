@@ -42,7 +42,7 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
   ) => {
     const [overlays, setOverlays] = useState<google.maps.GroundOverlay[]>([])
     const [animationMonthIdx, setAnimationMonthIdx] = useState(0)
-    const [animationHourIdx, setAnimationHourIdx] = useState(5)
+    const [animationHourIdx, setAnimationHourIdx] = useState(0)
     const [activeLayer, setActiveLayer] = useState<Layer | null>(null)
 
     const overlaysRef = useRef<google.maps.GroundOverlay[]>([])
