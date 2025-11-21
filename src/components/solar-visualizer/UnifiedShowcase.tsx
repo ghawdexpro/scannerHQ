@@ -327,9 +327,8 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
       // Reset animation state for animated layers
       if (layer.id === 'monthlyFlux') {
         setCurrentMonth(0)
-      } else if (layer.id === 'hourlyShade') {
-        setCurrentHour(5) // Start at 5AM for showcase mode
       }
+      // Note: hourlyShade initial hour (5 AM) is handled by SolarDataLayers callback
 
       // Start display phase
       startDisplayPhase(step, stepIndex)
