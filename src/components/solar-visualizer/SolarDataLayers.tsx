@@ -81,35 +81,45 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
       // Reset animation indices
       if (layer.id === 'monthlyFlux') {
         setAnimationMonthIdx(0)
+        setOverlays(newOverlays)
+        overlaysRef.current = newOverlays
+        // Pass explicit index to avoid stale state
+        updateOverlayVisibility(newOverlays, layer, visible, 0)
       } else if (layer.id === 'hourlyShade') {
         setAnimationHourIdx(0) // Start at frame 0 (5 AM) - matches animation effect
+        setOverlays(newOverlays)
+        overlaysRef.current = newOverlays
+        // Pass explicit index to avoid stale state
+        updateOverlayVisibility(newOverlays, layer, visible, 0)
+      } else {
+        setOverlays(newOverlays)
+        overlaysRef.current = newOverlays
+        // Show/hide based on visibility
+        updateOverlayVisibility(newOverlays, layer, visible)
       }
-
-      setOverlays(newOverlays)
-      overlaysRef.current = newOverlays
-
-      // Show/hide based on visibility
-      updateOverlayVisibility(newOverlays, layer, visible)
     }
 
     // Update overlay visibility based on layer type and visibility flag
     const updateOverlayVisibility = (
       overlayList: google.maps.GroundOverlay[],
       layer: Layer,
-      visible: boolean
+      visible: boolean,
+      explicitIndex?: number
     ) => {
-      console.log('[SolarDataLayers] Updating visibility for', layer.id, 'visible:', visible)
+      console.log('[SolarDataLayers] Updating visibility for', layer.id, 'visible:', visible, 'explicitIndex:', explicitIndex)
 
       if (layer.id === 'monthlyFlux') {
         // Show only the current month overlay
+        const idx = explicitIndex !== undefined ? explicitIndex : animationMonthIdx
         overlayList.forEach((overlay, i) => {
-          const shouldShow = i === animationMonthIdx && visible
+          const shouldShow = i === idx && visible
           overlay.setMap(shouldShow ? map : null)
         })
       } else if (layer.id === 'hourlyShade') {
         // Show only the current hour overlay
+        const idx = explicitIndex !== undefined ? explicitIndex : animationHourIdx
         overlayList.forEach((overlay, i) => {
-          const shouldShow = i === animationHourIdx && visible
+          const shouldShow = i === idx && visible
           overlay.setMap(shouldShow ? map : null)
         })
       } else {
