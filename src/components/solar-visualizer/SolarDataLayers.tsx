@@ -22,6 +22,7 @@ interface SolarDataLayersProps {
 
 export interface SolarDataLayersHandle {
   showLayer: (layer: Layer, visible: boolean) => void
+  setOnHourChange?: (callback: (hour: number) => void) => void
 }
 
 const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
@@ -42,15 +43,21 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
     const [overlays, setOverlays] = useState<google.maps.GroundOverlay[]>([])
     const [animationMonthIdx, setAnimationMonthIdx] = useState(0)
     const [animationHourIdx, setAnimationHourIdx] = useState(5)
+    const [activeLayer, setActiveLayer] = useState<Layer | null>(null)
 
     const overlaysRef = useRef<google.maps.GroundOverlay[]>([])
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+    const onHourChangeRef = useRef<((hour: number) => void) | null>(null)
 
     // Expose showLayer method for imperative control
     useImperativeHandle(ref, () => ({
       showLayer: (layer: Layer, visible: boolean) => {
         console.log('[SolarDataLayers] showLayer called:', layer.id, 'visible:', visible)
+        setActiveLayer(layer)
         createAndShowOverlays(layer, visible)
+      },
+      setOnHourChange: (callback: (hour: number) => void) => {
+        onHourChangeRef.current = callback
       },
     }))
 
@@ -123,7 +130,7 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
 
     // Start animation for monthlyFlux or hourlyShade
     useEffect(() => {
-      if (!currentLayer || !showcaseMode) {
+      if (!activeLayer || !showcaseMode) {
         if (animationIntervalRef.current) {
           clearInterval(animationIntervalRef.current)
           animationIntervalRef.current = null
@@ -136,18 +143,27 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
           clearInterval(animationIntervalRef.current)
         }
 
-        if (currentLayer.id === 'monthlyFlux') {
+        if (activeLayer.id === 'monthlyFlux') {
           console.log('[SolarDataLayers] Starting monthlyFlux animation')
+          setAnimationMonthIdx(0) // Reset to 0
           animationIntervalRef.current = setInterval(() => {
             setAnimationMonthIdx((prev) => (prev + 1) % 12)
           }, 333) // ~3 months per second
-        } else if (currentLayer.id === 'hourlyShade') {
-          console.log('[SolarDataLayers] Starting hourlyShade animation')
-          const frameCount = currentLayer.canvases.length || 16
+        } else if (activeLayer.id === 'hourlyShade') {
+          console.log('[SolarDataLayers] Starting hourlyShade animation (0.5s per frame)')
+          setAnimationHourIdx(0) // Start at frame 0 (5 AM)
+          const frameCount = activeLayer.canvases.length || 16
 
           animationIntervalRef.current = setInterval(() => {
-            setAnimationHourIdx((prev) => (prev + 1) % frameCount)
-          }, 1000) // 1 hour per second
+            setAnimationHourIdx((prev) => {
+              const next = (prev + 1) % frameCount
+              // Notify parent of hour change
+              if (onHourChangeRef.current) {
+                onHourChangeRef.current(5 + next) // 5 AM is hour 0
+              }
+              return next
+            })
+          }, 500) // 0.5 seconds per frame (half second)
         }
       }
 
@@ -159,7 +175,7 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
           animationIntervalRef.current = null
         }
       }
-    }, [currentLayer, showcaseMode])
+    }, [activeLayer, showcaseMode])
 
     // Cleanup on unmount
     useEffect(() => {

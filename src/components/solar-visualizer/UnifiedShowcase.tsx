@@ -409,6 +409,22 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
       }
     }, [])
 
+    // Format hour for display
+    const formatHour = (hour: number) => {
+      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+      const period = hour < 12 ? 'AM' : 'PM'
+      return `${displayHour}:00 ${period}`
+    }
+
+    // Set up hour change callback when ref is ready
+    useEffect(() => {
+      if (solarDataLayersRef.current?.setOnHourChange) {
+        solarDataLayersRef.current.setOnHourChange((hour: number) => {
+          setCurrentHour(hour)
+        })
+      }
+    }, [])
+
     // Get time indicator for animated layers
     const timeIndicator = (() => {
       const step = SHOWCASE_STEPS[currentStep]
@@ -417,9 +433,7 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
       if (step.layerId === 'monthlyFlux') {
         return ` - ${monthNames[currentMonth]}`
       } else if (step.layerId === 'hourlyShade') {
-        const hour12 = currentHour === 0 ? 12 : currentHour > 12 ? currentHour - 12 : currentHour
-        const period = currentHour < 12 ? 'AM' : 'PM'
-        return ` - ${hour12 === 0 ? 12 : hour12}:00 ${period}`
+        return ` - ${formatHour(currentHour)}`
       }
       return ''
     })()
@@ -528,6 +542,15 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
                       {SHOWCASE_STEPS[currentStep].title}
                     </h3>
                     <p className="text-gray-600 mb-4">{SHOWCASE_STEPS[currentStep].description}</p>
+
+                    {/* Large time display for hourly shade */}
+                    {SHOWCASE_STEPS[currentStep].layerId === 'hourlyShade' && (
+                      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                        <span className="text-4xl font-bold text-blue-600">
+                          🕐 {formatHour(currentHour)}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Animated message */}
                     <div className="flex items-center justify-center space-x-2 text-blue-600">
