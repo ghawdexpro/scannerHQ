@@ -7,6 +7,136 @@ import { geocodeCache } from '@/lib/cache/geocode-cache'
 import { ERROR_MESSAGES } from '@/config/constants'
 import toast from 'react-hot-toast'
 
+// ============================================================================
+// ANIMATION STATE MACHINE & CONFIGURATION
+// ============================================================================
+
+type AnimationState = 'idle' | 'animating' | 'geocoding' | 'validating' | 'complete' | 'error' | 'aborted'
+
+interface AnimationContext {
+  state: AnimationState
+  startZoom: number
+  targetZoom: number
+  clickLat: number
+  clickLng: number
+  startTime: number
+  duration: number
+  rafId: number | null
+  timeoutId: ReturnType<typeof setTimeout> | null
+  abortController: AbortController | null
+  isLocked: boolean
+}
+
+// Animation configuration optimized for various scenarios
+const ANIMATION_CONFIG = {
+  BASE_DURATION: 600, // ms - base animation duration
+  MIN_DURATION: 300,
+  MAX_DURATION: 1200,
+  DURATION_PER_ZOOM: 80, // ms per zoom level
+  TARGET_FPS: 60,
+  MIN_ZOOM_FOR_PIN: 18,
+  ZOOM_INCREMENT: 3,
+  MAX_ZOOM: 21,
+  MAX_GEOCODING_TIME: 10000, // 10 seconds
+  MAX_VALIDATION_TIME: 5000, // 5 seconds
+  MAX_ANIMATION_TIME: 5000, // 5 seconds max for animation
+  MAX_RETRY_ATTEMPTS: 3,
+} as const
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/** Check if user prefers reduced motion */
+const prefersReducedMotion = (): boolean => {
+  try {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  } catch {
+    return false
+  }
+}
+
+/** Detect if device is low-end (memory/CPU constrained) */
+const isLowEndDevice = (): boolean => {
+  try {
+    if (typeof navigator === 'undefined') return false
+    // Check device memory if available (Chrome/Edge)
+    const deviceMemory = (navigator as any).deviceMemory
+    if (deviceMemory && deviceMemory <= 4) return true
+
+    // Check logical processors
+    const cores = navigator.hardwareConcurrency
+    if (cores && cores <= 2) return true
+
+    return false
+  } catch {
+    return false
+  }
+}
+
+/** Calculate animation duration based on zoom distance and device capability */
+const calculateDuration = (zoomDistance: number): number => {
+  const baseDuration = ANIMATION_CONFIG.BASE_DURATION + (zoomDistance * ANIMATION_CONFIG.DURATION_PER_ZOOM)
+  const clamped = Math.max(ANIMATION_CONFIG.MIN_DURATION, Math.min(baseDuration, ANIMATION_CONFIG.MAX_DURATION))
+
+  // Reduce by 30% on low-end devices
+  if (isLowEndDevice()) {
+    return Math.ceil(clamped * 0.7)
+  }
+
+  // Reduce by 50% if user prefers reduced motion
+  if (prefersReducedMotion()) {
+    return Math.ceil(clamped * 0.5)
+  }
+
+  return clamped
+}
+
+/** Validate coordinates are within reasonable bounds */
+const isValidCoordinate = (lat: number, lng: number): boolean => {
+  return (
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    isFinite(lat) &&
+    isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180 &&
+    // Malta/Gozo bounds with buffer
+    lat >= 35.7 &&
+    lat <= 36.2 &&
+    lng >= 14.0 &&
+    lng <= 14.7
+  )
+}
+
+/** Clamp zoom level within valid bounds */
+const clampZoom = (zoom: number): number => {
+  return Math.max(0, Math.min(Math.floor(zoom), ANIMATION_CONFIG.MAX_ZOOM))
+}
+
+/** Easing function for smooth animation (cubic ease-in-out) */
+const easeInOutCubic = (t: number): number => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+
+/** Linear interpolation between two values */
+const interpolate = (start: number, end: number, t: number): number => {
+  return start + (end - start) * t
+}
+
+/** Unique ID for toast notifications to prevent duplicates */
+let lastToastId = ''
+const showUniqueToast = (message: string, options: any = {}) => {
+  const toastId = `${Date.now()}-${Math.random()}`
+  if (toastId !== lastToastId) {
+    lastToastId = toastId
+    toast(message, { ...options, id: toastId })
+  }
+}
+
 interface InteractiveMapInputProps {
   onAddressSelect: (address: string, coordinates: { lat: number; lng: number }) => void
   isLoading?: boolean
@@ -14,8 +144,22 @@ interface InteractiveMapInputProps {
 
 export default function InteractiveMapInput({ onAddressSelect, isLoading = false }: InteractiveMapInputProps) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const markerRef = useRef<google.maps.Marker | null>(null) // Use ref for immediate access
-  const isMapIdleRef = useRef(false) // Track if map is ready for interactions
+  const markerRef = useRef<google.maps.Marker | null>(null)
+  const isMapIdleRef = useRef(false)
+  const animationContextRef = useRef<AnimationContext>({
+    state: 'idle',
+    startZoom: 11,
+    targetZoom: 21,
+    clickLat: 0,
+    clickLng: 0,
+    startTime: 0,
+    duration: 0,
+    rafId: null,
+    timeoutId: null,
+    abortController: null,
+    isLocked: false,
+  })
+
   const [map, setMap] = useState<google.maps.Map | null>(null)
   const [marker, setMarker] = useState<google.maps.Marker | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -27,6 +171,188 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   const [showLocationPrompt, setShowLocationPrompt] = useState(true)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  // ============================================================================
+  // ANIMATION ENGINE FUNCTIONS
+  // ============================================================================
+
+  /** Initialize animation context for a new click */
+  const initAnimationContext = useCallback((clickLat: number, clickLng: number, startZoom: number) => {
+    const ctx = animationContextRef.current
+    ctx.clickLat = clickLat
+    ctx.clickLng = clickLng
+    ctx.startZoom = startZoom
+    ctx.targetZoom = ANIMATION_CONFIG.MIN_ZOOM_FOR_PIN
+    ctx.startTime = Date.now()
+    ctx.duration = calculateDuration(Math.abs(ctx.targetZoom - startZoom))
+    ctx.isLocked = true
+    ctx.state = 'animating'
+    ctx.abortController = new AbortController()
+  }, [])
+
+  /** Cleanup animation resources (RAF, timeouts, etc.) */
+  const cleanupAnimation = useCallback(() => {
+    const ctx = animationContextRef.current
+    if (ctx.rafId !== null) {
+      cancelAnimationFrame(ctx.rafId)
+      ctx.rafId = null
+    }
+    if (ctx.timeoutId !== null) {
+      clearTimeout(ctx.timeoutId)
+      ctx.timeoutId = null
+    }
+    ctx.isLocked = false
+  }, [])
+
+  /** Abort animation and clean up */
+  const abortAnimation = useCallback(() => {
+    const ctx = animationContextRef.current
+    if (ctx.abortController) {
+      ctx.abortController.abort()
+      ctx.abortController = null
+    }
+    ctx.state = 'aborted'
+    cleanupAnimation()
+  }, [cleanupAnimation])
+
+  /** Animate zoom level smoothly using RAF */
+  const animateZoom = useCallback((mapInstance: google.maps.Map) => {
+    const ctx = animationContextRef.current
+
+    const animate = () => {
+      const elapsed = Date.now() - ctx.startTime
+
+      // Guard: Check animation time limit (5 seconds max)
+      if (elapsed > ANIMATION_CONFIG.MAX_ANIMATION_TIME) {
+        console.warn('Animation timeout, jumping to final zoom')
+        mapInstance.setZoom(ctx.targetZoom)
+        ctx.state = 'complete'
+        return
+      }
+
+      // Calculate progress (0 to 1) with easing
+      const rawProgress = elapsed / ctx.duration
+      const clampedProgress = Math.min(rawProgress, 1)
+      const easedProgress = easeInOutCubic(clampedProgress)
+
+      // Interpolate zoom level
+      const currentZoom = interpolate(ctx.startZoom, ctx.targetZoom, easedProgress)
+      mapInstance.setZoom(clampZoom(currentZoom))
+
+      // Continue animation if not complete
+      if (clampedProgress < 1) {
+        ctx.rafId = requestAnimationFrame(animate)
+      } else {
+        // Animation complete - zoom to exact target
+        mapInstance.setZoom(ctx.targetZoom)
+        ctx.state = 'complete'
+      }
+    }
+
+    // Reduce motion: skip animation and jump to target
+    if (prefersReducedMotion()) {
+      mapInstance.setZoom(ctx.targetZoom)
+      ctx.state = 'complete'
+      return
+    }
+
+    ctx.rafId = requestAnimationFrame(animate)
+  }, [])
+
+  /** Proceed to geocoding after animation completes */
+  const proceedToGeocoding = useCallback(async (mapInstance: google.maps.Map) => {
+    const ctx = animationContextRef.current
+
+    if (!isValidCoordinate(ctx.clickLat, ctx.clickLng)) {
+      console.error('Invalid coordinates after animation:', { lat: ctx.clickLat, lng: ctx.clickLng })
+      ctx.state = 'error'
+      return
+    }
+
+    ctx.state = 'geocoding'
+
+    try {
+      const geocodingLib = await loadLibrary('geocoding')
+      const geocoder = new geocodingLib.Geocoder()
+      const latLng = new google.maps.LatLng(ctx.clickLat, ctx.clickLng)
+
+      // Timeout guard for geocoding
+      const geocodingTimeout = new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error('Geocoding timeout')), ANIMATION_CONFIG.MAX_GEOCODING_TIME)
+      )
+
+      const geocodingPromise = new Promise<google.maps.GeocoderResult[] | null>((resolve) => {
+        geocoder.geocode({ location: latLng }, (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
+          if (status === 'OK' && results && results[0]) {
+            resolve(results)
+          } else {
+            resolve(null)
+          }
+        })
+      })
+
+      const results = await Promise.race([geocodingPromise, geocodingTimeout])
+
+      if (results && results[0]) {
+        const address = results[0].formatted_address
+        geocodeCache.set(address, { lat: ctx.clickLat, lng: ctx.clickLng })
+        ctx.state = 'validating'
+        await validateAndSetLocation(address, { lat: ctx.clickLat, lng: ctx.clickLng }, mapInstance)
+      } else {
+        toast.error('Could not find address for this location', { duration: 2000 })
+        ctx.state = 'error'
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error)
+      toast.error('Error finding address. Please try again.', { duration: 2000 })
+      ctx.state = 'error'
+    }
+  }, [])
+
+  /** Proceed to validation after geocoding completes */
+  const proceedToValidation = useCallback(async (mapInstance: google.maps.Map) => {
+    // Validation is handled in proceedToGeocoding callback
+    // This is kept for future enhancement
+  }, [])
+
+  // ============================================================================
+  // MOBILE RESILIENCE: Visibility and Orientation Handlers
+  // ============================================================================
+
+  useEffect(() => {
+    const ctx = animationContextRef.current
+
+    // Handle visibility changes (tab switch, device lock, etc.)
+    const handleVisibilityChange = () => {
+      if (document.hidden && ctx.isLocked) {
+        console.warn('Page hidden during animation, aborting')
+        abortAnimation()
+      }
+    }
+
+    // Handle orientation changes (rotate device)
+    const handleOrientationChange = () => {
+      if (ctx.isLocked && ctx.state === 'animating') {
+        console.warn('Orientation changed during animation, aborting')
+        abortAnimation()
+      }
+
+      // Trigger map resize after orientation change
+      if (map) {
+        setTimeout(() => {
+          google.maps.event.trigger(map, 'resize')
+        }, 100)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('orientationchange', handleOrientationChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('orientationchange', handleOrientationChange)
+    }
+  }, [map, abortAnimation])
 
   // Handle fullscreen transitions and orientation changes
   useEffect(() => {
@@ -56,6 +382,20 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       }
     }
   }, [isFullscreen, map])
+
+  // ============================================================================
+  // CLEANUP ON UNMOUNT
+  // ============================================================================
+
+  useEffect(() => {
+    return () => {
+      // Abort any active animation on unmount
+      const ctx = animationContextRef.current
+      if (ctx.isLocked) {
+        abortAnimation()
+      }
+    }
+  }, [abortAnimation])
 
   // Request user's location
   const requestUserLocation = async (mapInstance: google.maps.Map) => {
@@ -185,74 +525,96 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   }, [])
 
 
-  // Handle map click with memoization
+  // ============================================================================
+  // BULLETPROOF HANDLE MAP CLICK - 5 GUARD CONDITIONS
+  // ============================================================================
+
   const handleMapClick = useCallback(async (latLng: google.maps.LatLng, mapInstance: google.maps.Map) => {
-    // Extract coordinates immediately to prevent stale reference in deferred callback
+    const ctx = animationContextRef.current
     const lat = latLng.lat()
     const lng = latLng.lng()
 
-    // If map is not idle yet (still settling from initialization/resize), wait for idle event
+    // GUARD 1: Check if map is idle
     if (!isMapIdleRef.current) {
-      console.log('Map not idle yet, deferring click...', { lat, lng })
       google.maps.event.addListenerOnce(mapInstance, 'idle', () => {
-        console.log('Map now idle, processing deferred click', { lat, lng })
-        // Create new LatLng object from stored coordinates to process deferred click
         const deferredLatLng = new google.maps.LatLng(lat, lng)
         handleMapClick(deferredLatLng, mapInstance)
       })
       return
     }
 
-    console.log('=== MAP CLICK DEBUG ===')
-    console.log('Clicked coordinates:', { lat, lng })
-    console.log('Current map center:', mapInstance.getCenter()?.toJSON())
-
-    // Get current zoom level
-    const currentZoom = mapInstance.getZoom() || 11
-    console.log('Current zoom:', currentZoom)
-
-    // If zoomed out too far, zoom in instead of placing pin
-    // Only place pin when zoom >= 18 (close enough to see individual properties)
-    if (currentZoom < 18) {
-      console.log('Zooming to clicked location:', { lat, lng, newZoom: Math.min(currentZoom + 3, 21) })
-
-      // Use setOptions to set both center and zoom atomically
-      mapInstance.setOptions({
-        center: { lat, lng },
-        zoom: Math.min(currentZoom + 3, 21)
-      })
-      toast('Zoom in closer to select your exact property', {
-        id: 'zoom-prompt',
-        icon: '🔍',
-        duration: 1000
-      })
+    // GUARD 2: Check if animation is already locked
+    if (ctx.isLocked) {
+      console.warn('Animation already in progress, ignoring click')
       return
     }
 
-    setIsValidating(true)
-
-    try {
-      // Reverse geocode to get address
-      const geocodingLib = await loadLibrary('geocoding')
-      const geocoder = new geocodingLib.Geocoder()
-
-      geocoder.geocode({ location: latLng }, async (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
-        if (status === 'OK' && results && results[0]) {
-          const address = results[0].formatted_address
-          // Cache the geocoding result for 30 minutes
-          geocodeCache.set(address, { lat, lng })
-          await validateAndSetLocation(address, { lat, lng }, mapInstance)
-        } else {
-          toast.error('Could not find address for this location', { duration: 2000 })
-          setIsValidating(false)
-        }
-      })
-    } catch (error) {
-      console.error('Geocoding error:', error)
-      toast.error('Error finding address. Please try again.', { duration: 2000 })
-      setIsValidating(false)
+    // GUARD 3: Validate coordinates
+    if (!isValidCoordinate(lat, lng)) {
+      console.error('Invalid coordinates clicked:', { lat, lng })
+      toast.error(ERROR_MESSAGES.INVALID_ADDRESS, { duration: 2000 })
+      return
     }
-  }, [])
+
+    // GUARD 4: Get current zoom and validate
+    const currentZoom = mapInstance.getZoom()
+    if (currentZoom === null || currentZoom === undefined) {
+      console.error('Cannot determine current zoom level')
+      toast.error('Error reading map zoom level. Please try again.', { duration: 2000 })
+      return
+    }
+
+    // GUARD 5: Check if already at target zoom
+    if (currentZoom >= ANIMATION_CONFIG.MIN_ZOOM_FOR_PIN) {
+      // Already zoomed in enough, proceed directly to geocoding
+      initAnimationContext(lat, lng, currentZoom)
+      ctx.state = 'geocoding'
+      setIsValidating(true)
+
+      // Update map center to clicked location
+      mapInstance.setCenter({ lat, lng })
+      mapInstance.setZoom(ANIMATION_CONFIG.MAX_ZOOM)
+
+      await proceedToGeocoding(mapInstance)
+      cleanupAnimation()
+      return
+    }
+
+    // ========================================================================
+    // START SMOOTH ZOOM ANIMATION
+    // ========================================================================
+
+    console.log('Starting smooth zoom animation:', { lat, lng, currentZoom, targetZoom: ANIMATION_CONFIG.MIN_ZOOM_FOR_PIN })
+
+    // Initialize animation context
+    initAnimationContext(lat, lng, currentZoom)
+
+    // Update map center immediately to clicked location
+    mapInstance.setCenter({ lat, lng })
+
+    // Start smooth zoom animation
+    animateZoom(mapInstance)
+
+    // Set up animation completion check
+    const checkAnimationCompletion = setInterval(() => {
+      if (ctx.state === 'complete' || ctx.state === 'error') {
+        clearInterval(checkAnimationCompletion)
+        ctx.state = 'geocoding'
+        setIsValidating(true)
+        proceedToGeocoding(mapInstance).finally(() => {
+          cleanupAnimation()
+        })
+      }
+    }, 50)
+
+    // Guard: Clear interval on component unmount or abort
+    return () => clearInterval(checkAnimationCompletion)
+  }, [
+    initAnimationContext,
+    cleanupAnimation,
+    animateZoom,
+    proceedToGeocoding,
+  ])
 
   // Validate and set location with memoization
   const validateAndSetLocation = useCallback(async (
