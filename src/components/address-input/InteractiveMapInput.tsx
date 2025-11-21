@@ -39,6 +39,7 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
   const mapRef = useRef<HTMLDivElement>(null)
   const markerRef = useRef<google.maps.Marker | null>(null)
   const isMapIdleRef = useRef(false)
+  const pendingZoomRef = useRef<NodeJS.Timeout | null>(null)
 
   const [map, setMap] = useState<google.maps.Map | null>(null)
   const [marker, setMarker] = useState<google.maps.Marker | null>(null)
@@ -100,10 +101,20 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
           lng: position.coords.longitude
         }
 
-        // Center map on user location immediately and zoom in
-        // Use setCenter instead of panTo for immediate, precise positioning
-        mapInstance.setCenter(userLocation)
-        mapInstance.setZoom(21) // Closer zoom for precise confirmation
+        // Center map on user location with animation, then zoom in
+        // Use panTo for animated movement (better state handling than setCenter)
+        mapInstance.panTo(userLocation)
+
+        // Cancel any pending zoom
+        if (pendingZoomRef.current) {
+          clearTimeout(pendingZoomRef.current)
+        }
+
+        // Delay zoom until pan animation starts (100ms safe margin for all devices)
+        pendingZoomRef.current = setTimeout(() => {
+          mapInstance.setZoom(21) // Closer zoom for precise confirmation
+          pendingZoomRef.current = null
+        }, 100)
 
         // Reverse geocode to get address
         try {
@@ -233,9 +244,21 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       const zoomIncrement = currentZoom === 11 ? 1 : 3
       const nextZoom = Math.min(currentZoom + zoomIncrement, 21)
 
-      // Use atomic operations for reliable zoom-to-location on all browsers
-      mapInstance.setCenter({ lat, lng })
-      mapInstance.setZoom(nextZoom)
+      // Use panTo for animated movement instead of setCenter
+      // panTo signals map state transition, preventing race conditions during initialization
+      mapInstance.panTo({ lat, lng })
+
+      // Cancel any pending zoom from previous clicks
+      if (pendingZoomRef.current) {
+        clearTimeout(pendingZoomRef.current)
+      }
+
+      // Delay zoom until pan animation starts (100ms = 6 frames at 60fps, safe for all devices)
+      // This allows panTo animation to register with map's internal state machine
+      pendingZoomRef.current = setTimeout(() => {
+        mapInstance.setZoom(nextZoom)
+        pendingZoomRef.current = null
+      }, 100)
 
       toast('Zoom in closer to select your exact property', {
         id: 'zoom-prompt',
@@ -308,9 +331,19 @@ export default function InteractiveMapInput({ onAddressSelect, isLoading = false
       })
 
       // Center map on the EXACT pin location and zoom in
-      // Use setCenter instead of panTo for immediate, precise positioning
-      mapInstance.setCenter(coordinates)
-      mapInstance.setZoom(21)
+      // Use panTo for animated movement (better state handling than setCenter)
+      mapInstance.panTo(coordinates)
+
+      // Cancel any pending zoom
+      if (pendingZoomRef.current) {
+        clearTimeout(pendingZoomRef.current)
+      }
+
+      // Delay zoom until pan animation starts (100ms safe margin for all devices)
+      pendingZoomRef.current = setTimeout(() => {
+        mapInstance.setZoom(21)
+        pendingZoomRef.current = null
+      }, 100)
 
       // Update or create marker
       updateMarker(coordinates, mapInstance)
