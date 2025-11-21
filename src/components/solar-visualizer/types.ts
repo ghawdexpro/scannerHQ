@@ -93,33 +93,3 @@ export interface ShowcaseStep {
   dayOfYear?: number // For hourlyShade layers (1-365)
 }
 
-export interface AutoShowcaseProps {
-  onComplete: () => void
-}
-
-export interface SolarDataLayersProps {
-  map: google.maps.Map
-  buildingInsights: {
-    center: {
-      latitude: number
-      longitude: number
-    }
-  }
-  selectedLayerId: 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none'
-  selectedDayOfYear?: number
-  showcaseMode?: boolean
-  dataLayersResponse?: DataLayersResponse
-}
-
-// === Global Window Interface Extensions ===
-
-declare global {
-  interface Window {
-    // Showcase control functions
-    showcaseToggleOverlay?: (visible: boolean) => void
-    areSolarOverlaysReady?: () => boolean
-    getCurrentLayerId?: () => 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none'
-    showcaseSetDesiredLayer?: (layerId: 'rgb' | 'mask' | 'dsm' | 'annualFlux' | 'monthlyFlux' | 'hourlyShade' | 'none', dayOfYear?: number) => void
-    solarDataLayersReady?: boolean
-  }
-}
