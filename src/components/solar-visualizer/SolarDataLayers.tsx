@@ -82,7 +82,7 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
       if (layer.id === 'monthlyFlux') {
         setAnimationMonthIdx(0)
       } else if (layer.id === 'hourlyShade') {
-        setAnimationHourIdx(5) // Start at 5AM for showcase mode
+        setAnimationHourIdx(0) // Start at frame 0 (5 AM) - matches animation effect
       }
 
       setOverlays(newOverlays)
