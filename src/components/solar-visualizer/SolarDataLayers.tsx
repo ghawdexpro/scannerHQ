@@ -180,9 +180,11 @@ export default function SolarDataLayers({
 
       // Keep cache size under control (max 5 layers)
       if (layerCacheRef.current.size > 5) {
-        const firstKey = layerCacheRef.current.keys().next().value
-        layerCacheRef.current.delete(firstKey)
-        console.log('[SolarDataLayers] 🗑️ Cache evicted oldest layer:', firstKey)
+        const firstKey = layerCacheRef.current.keys().next().value as string | undefined
+        if (firstKey) {
+          layerCacheRef.current.delete(firstKey)
+          console.log('[SolarDataLayers] 🗑️ Cache evicted oldest layer:', firstKey)
+        }
       }
 
       return layer
