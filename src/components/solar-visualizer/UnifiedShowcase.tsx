@@ -128,6 +128,7 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
     const displayTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const stepInProgressRef = useRef(false)
     const loadedLayersRef = useRef<Map<string, Layer>>(new Map())
+    const [currentDisplayLayer, setCurrentDisplayLayer] = useState<Layer | null>(null)
 
     // Expose startShowcase method to parent
     useImperativeHandle(ref, () => ({
@@ -320,6 +321,7 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
 
       // Show layer immediately via imperative call
       console.log('[UnifiedShowcase] Showing layer:', cacheKey)
+      setCurrentDisplayLayer(layer) // Track which layer is currently displayed
       solarDataLayersRef.current?.showLayer(layer, true)
 
       // Reset animation state for animated layers
@@ -481,6 +483,7 @@ const UnifiedShowcase = forwardRef<UnifiedShowcaseHandle, UnifiedShowcaseProps>(
                 longitude: coordinates.lng,
               },
             }}
+            currentLayer={currentDisplayLayer}
             currentDayOfYear={currentDayOfYear}
             overlayVisible={overlayVisible}
             showcaseMode={true}
