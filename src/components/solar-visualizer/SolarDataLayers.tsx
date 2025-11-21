@@ -180,6 +180,10 @@ const SolarDataLayers = forwardRef<SolarDataLayersHandle, SolarDataLayersProps>(
         } else if (activeLayer.id === 'hourlyShade') {
           console.log('[SolarDataLayers] Starting hourlyShade animation (0.5s per frame)')
           setAnimationHourIdx(0) // Start at frame 0 (5 AM)
+          // Notify parent of initial hour
+          if (onHourChangeRef.current) {
+            onHourChangeRef.current(5) // Initial: 5 AM
+          }
           const frameCount = activeLayer.canvases.length || 16
 
           animationIntervalRef.current = setInterval(() => {
