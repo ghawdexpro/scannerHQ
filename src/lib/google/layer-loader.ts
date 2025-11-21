@@ -1,4 +1,4 @@
-import { downloadGeoTIFF, GeoTiffData } from './geotiff-processor'
+import { downloadGeoTIFF, type GeoTiffData } from './geotiff-processor'
 import {
   renderPalette,
   renderRGB,
@@ -232,12 +232,22 @@ async function loadMonthlyFluxLayer(urls: DataLayersResponse): Promise<Layer> {
 
 async function loadHourlyShadeLayer(
   urls: DataLayersResponse,
-  dayOfYear: number = 172, // Default to summer solstice
+  dayOfYear: number = 172, // Default to summer solstice (day 172 = June 21)
   showcaseMode: boolean = false
 ): Promise<Layer> {
   const mask = await downloadGeoTIFF(urls.maskUrl)
 
-  const HOURS_PER_DAY = 24
+  // Import bit-decoding utilities
+  const { dayOfYearToMonthDay, decodeHourlyShadeRaster } = await import('./geotiff-processor')
+
+  // Convert day-of-year (1-365) to month (1-12) and day (1-31)
+  const { month, day } = dayOfYearToMonthDay(dayOfYear)
+  const monthIndex = month - 1 // 0-indexed for array access
+
+  console.log(`[LayerLoader] Loading hourlyShade for day ${dayOfYear} (${month}/${day})`)
+
+  // Fetch the monthly GeoTIFF (contains all 24 hours as separate bands)
+  const monthlyGeoTiff = await downloadGeoTIFF(urls.hourlyShadeUrls[monthIndex])
 
   // In showcase mode, show only daylight hours (5AM-8PM = 16 hours)
   // In normal mode, show all 24 hours
@@ -245,20 +255,36 @@ async function loadHourlyShadeLayer(
     ? [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] // 5AM-8PM (16 hours)
     : Array.from({ length: 24 }, (_, i) => i) // All 24 hours
 
-  const hourUrls = hoursToShow.map(hour => {
-    const index = (dayOfYear * HOURS_PER_DAY) + hour
-    return urls.hourlyShadeUrls[index]
-  })
+  // For each hour band, decode the day bit and render
+  const canvases = hoursToShow.map(hour => {
+    // Get the raster band for this hour
+    const hourBand = monthlyGeoTiff.rasters[hour]
 
-  const hours = await Promise.all(hourUrls.map(url => downloadGeoTIFF(url)))
+    if (!hourBand) {
+      console.warn(`[LayerLoader] ⚠️ Hour band ${hour} not found in monthly GeoTIFF`)
+      throw new Error(`Hour ${hour} band not found in GeoTIFF`)
+    }
 
-  const canvases = hours.map(data =>
-    renderPalette({
-      data,
+    // Decode the day bit for each pixel in this hour's band
+    const decodedRaster = decodeHourlyShadeRaster(hourBand, day)
+
+    console.log(`[LayerLoader] Decoded hour ${hour} for day ${day}`)
+
+    // Create synthetic GeoTiff with decoded data
+    const sunlightData: GeoTiffData = {
+      width: monthlyGeoTiff.width,
+      height: monthlyGeoTiff.height,
+      rasters: [decodedRaster],
+      bounds: monthlyGeoTiff.bounds,
+    }
+
+    // Render with binary palette (shadow = black, sunlight = white)
+    return renderPalette({
+      data: sunlightData,
       mask,
       colors: binaryPalette,
     })
-  )
+  })
 
   return {
     id: 'hourlyShade',

@@ -15,6 +15,46 @@ export interface GeoTiffData {
 }
 
 /**
+ * Convert day-of-year (1-365) to month (1-12) and day (1-31)
+ * Assumes non-leap year (365 days)
+ */
+export function dayOfYearToMonthDay(dayOfYear: number): { month: number; day: number } {
+  const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  let daysRemaining = dayOfYear
+
+  for (let month = 0; month < 12; month++) {
+    const daysInMonth = daysInMonths[month]
+    if (daysRemaining <= daysInMonth) {
+      return { month: month + 1, day: daysRemaining }
+    }
+    daysRemaining -= daysInMonth
+  }
+
+  // Fallback (shouldn't reach here with valid input)
+  return { month: 12, day: 31 }
+}
+
+/**
+ * Extract sunlight bit from a pixel value for a specific day
+ * Each 32-bit pixel encodes visibility for 31 days (bit 0 = day 1, bit 30 = day 31)
+ * Returns 1 if sun visible on that day, 0 if shade
+ */
+export function decodeSunlightBit(pixelValue: number, dayOfMonth: number): number {
+  // Bit position is dayOfMonth - 1 (0-indexed)
+  const bitPosition = dayOfMonth - 1
+  // Check if the bit is set: (pixelValue >> bitPosition) & 1
+  return (pixelValue >> bitPosition) & 1
+}
+
+/**
+ * Decode an entire raster band for a specific day of month
+ * Returns array of 0 (shade) or 1 (sun) for each pixel
+ */
+export function decodeHourlyShadeRaster(raster: number[], dayOfMonth: number): number[] {
+  return raster.map(pixelValue => decodeSunlightBit(pixelValue, dayOfMonth))
+}
+
+/**
  * Download and parse a GeoTIFF from Google Solar API
  * Uses proxy route to avoid CORS and authentication issues
  */
