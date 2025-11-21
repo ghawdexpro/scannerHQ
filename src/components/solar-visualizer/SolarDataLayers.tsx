@@ -34,6 +34,8 @@ export default function SolarDataLayers({
 
   const overlaysRef = useRef<google.maps.GroundOverlay[]>([])
   const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const layerCacheRef = useRef<Map<string, Layer>>(new Map())
+  const preloadingRef = useRef<Set<string>>(new Set())
 
   // Set up global functions for AutoShowcase
   useEffect(() => {
@@ -149,6 +151,47 @@ export default function SolarDataLayers({
     }
   }, [currentLayer, showcaseMode])
 
+  // Helper function to get layer from cache or load it
+  const getOrLoadLayer = async (
+    layerId: LayerId | 'none',
+    dayOfYear?: number
+  ): Promise<Layer | null> => {
+    if (layerId === 'none' || !dataLayersResponse) {
+      return null
+    }
+
+    const cacheKey = `${layerId}-${dayOfYear || 0}`
+
+    // Check cache first
+    if (layerCacheRef.current.has(cacheKey)) {
+      console.log('[SolarDataLayers] ⚡ Using cached layer:', cacheKey)
+      return layerCacheRef.current.get(cacheKey)!
+    }
+
+    try {
+      console.log('[SolarDataLayers] 🔄 Loading layer from network:', cacheKey)
+      const layer = await getLayer(layerId as LayerId, dataLayersResponse, {
+        dayOfYear: dayOfYear || selectedDayOfYear,
+        showcaseMode,
+      })
+
+      // Store in cache
+      layerCacheRef.current.set(cacheKey, layer)
+
+      // Keep cache size under control (max 5 layers)
+      if (layerCacheRef.current.size > 5) {
+        const firstKey = layerCacheRef.current.keys().next().value
+        layerCacheRef.current.delete(firstKey)
+        console.log('[SolarDataLayers] 🗑️ Cache evicted oldest layer:', firstKey)
+      }
+
+      return layer
+    } catch (error) {
+      console.error('[SolarDataLayers] ❌ Error loading layer:', cacheKey, error)
+      return null
+    }
+  }
+
   const loadSelectedLayer = async () => {
     if (!dataLayersResponse) {
       console.error('[SolarDataLayers] ❌ Cannot load layer - dataLayersResponse is undefined')
@@ -171,16 +214,20 @@ export default function SolarDataLayers({
         hourlyShadeUrlsCount: dataLayersResponse.hourlyShadeUrls?.length || 0,
       })
 
-      const layer = await getLayer(selectedLayerId as LayerId, dataLayersResponse, {
-        dayOfYear: selectedDayOfYear,
-        showcaseMode,
-      })
+      const layer = await getOrLoadLayer(selectedLayerId as LayerId, selectedDayOfYear)
 
-      console.log('[SolarDataLayers] ✅ Layer loaded from getLayer():', {
+      if (!layer) {
+        console.error('[SolarDataLayers] ❌ Failed to load layer:', selectedLayerId)
+        setOverlaysReady(false)
+        return
+      }
+
+      console.log('[SolarDataLayers] ✅ Layer loaded:', {
         id: layer.id,
         canvasesCount: layer.canvases.length,
         bounds: layer.bounds,
-        hasPalette: !!layer.palette
+        hasPalette: !!layer.palette,
+        fromCache: layerCacheRef.current.has(`${layer.id}-${selectedDayOfYear || 0}`)
       })
 
       // Clear old overlays
@@ -265,11 +312,87 @@ export default function SolarDataLayers({
     }
   }
 
+  // Immediate preload of common layers when showcase starts
+  useEffect(() => {
+    if (!showcaseMode || !dataLayersResponse) return
+
+    console.log('[SolarDataLayers] 🚀 Showcase mode activated - preloading common layers...')
+
+    // Preload mask and DSM in parallel (used in 6/8 steps)
+    Promise.all([
+      getOrLoadLayer('mask' as LayerId),
+      getOrLoadLayer('dsm' as LayerId),
+    ])
+      .then(() => {
+        console.log('[SolarDataLayers] ✅ Common layers preloaded (mask + DSM)')
+      })
+      .catch((err) => {
+        console.error('[SolarDataLayers] ❌ Error preloading common layers:', err)
+      })
+  }, [showcaseMode, dataLayersResponse])
+
+  // Look-ahead preloading of next step during showcase
+  useEffect(() => {
+    if (!showcaseMode || !dataLayersResponse) return
+
+    // Only preload if we're not already loading a layer
+    if (selectedLayerId === 'none') return
+
+    // Determine next layer to preload based on current layer
+    let nextLayerToPreload: { id: LayerId; dayOfYear?: number } | null = null
+
+    const currentIndex = ['rgb', 'mask', 'dsm', 'monthlyFlux', 'hourlyShade', 'hourlyShade', 'hourlyShade', 'dsm'].indexOf(
+      selectedLayerId as string
+    )
+
+    if (currentIndex !== -1 && currentIndex < 7) {
+      const nextIndex = currentIndex + 1
+      const nextLayers: Array<{ id: LayerId; dayOfYear?: number }> = [
+        { id: 'mask' },
+        { id: 'dsm' },
+        { id: 'monthlyFlux' },
+        { id: 'hourlyShade', dayOfYear: 265 }, // Next from summer is equinox
+        { id: 'hourlyShade', dayOfYear: 355 }, // Next from equinox is winter
+        { id: 'hourlyShade', dayOfYear: 172 }, // Next from winter is back to summer (but then DSM)
+        { id: 'dsm' }, // Final step
+      ]
+
+      if (nextLayers[nextIndex]) {
+        nextLayerToPreload = nextLayers[nextIndex]
+      }
+    }
+
+    if (!nextLayerToPreload) return
+
+    const cacheKey = `${nextLayerToPreload.id}-${nextLayerToPreload.dayOfYear || 0}`
+
+    // Avoid duplicate preloading
+    if (preloadingRef.current.has(cacheKey) || layerCacheRef.current.has(cacheKey)) {
+      return
+    }
+
+    preloadingRef.current.add(cacheKey)
+    console.log('[SolarDataLayers] 📦 Look-ahead preloading:', cacheKey)
+
+    getOrLoadLayer(nextLayerToPreload.id, nextLayerToPreload.dayOfYear)
+      .then(() => {
+        console.log('[SolarDataLayers] ✅ Look-ahead preload complete:', cacheKey)
+      })
+      .catch((err) => {
+        console.error('[SolarDataLayers] ❌ Look-ahead preload failed:', cacheKey, err)
+      })
+      .finally(() => {
+        preloadingRef.current.delete(cacheKey)
+      })
+  }, [selectedLayerId, showcaseMode, dataLayersResponse])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       clearOverlays()
       stopAnimation()
+      layerCacheRef.current.clear()
+      preloadingRef.current.clear()
     }
   }, [])
 

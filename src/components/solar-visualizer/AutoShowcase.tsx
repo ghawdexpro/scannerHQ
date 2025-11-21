@@ -360,9 +360,9 @@ const AutoShowcase = forwardRef<AutoShowcaseHandle, AutoShowcaseProps>(
 
       // Move to next step after display time
       displayTimeoutRef.current = setTimeout(() => {
-        console.log(`[AutoShowcase] Display phase complete for step ${currentStep + 1} (unlocking)`)
+        console.log(`[AutoShowcase] Display phase complete for step ${stepIndex + 1} (unlocking)`)
         stepInProgressRef.current = false
-        runStep(currentStep + 1)
+        runStep(stepIndex + 1)
       }, displayTime)
     }
 
