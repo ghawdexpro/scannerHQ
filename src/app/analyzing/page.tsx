@@ -91,10 +91,10 @@ function AnalyzingPageContent() {
         // Fetch dataLayers for visualization
         try {
           console.log('[ANALYZING] ========== DATA LAYERS FETCH START ==========')
-          console.log('[ANALYZING] Request URL:', `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=BASE`)
+          console.log('[ANALYZING] Request URL:', `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=HIGH`)
 
           const dataLayersResponse = await fetch(
-            `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=BASE`
+            `/api/solar/dataLayers/get?location.latitude=${lat}&location.longitude=${lng}&radius_meters=50&required_quality=HIGH`
           )
 
           console.log('[ANALYZING] Response status:', dataLayersResponse.status, dataLayersResponse.statusText)

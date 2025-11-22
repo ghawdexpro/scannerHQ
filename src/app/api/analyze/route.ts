@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
       console.log('[ANALYZE] Attempting Google Solar API')
 
       try {
-        const buildingInsights = await getBuildingInsights(lat, lng, 'BASE')
+        const buildingInsights = await getBuildingInsights(lat, lng, 'HIGH')
         solarAnalysis = calculateSolarConfiguration(buildingInsights.solarPotential)
         imageryQuality = buildingInsights.imageryQuality
 

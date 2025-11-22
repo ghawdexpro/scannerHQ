@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const latitude = searchParams.get('location.latitude')
   const longitude = searchParams.get('location.longitude')
   const radiusMeters = searchParams.get('radius_meters') || '50'
-  const requiredQuality = searchParams.get('required_quality') || 'BASE'
+  const requiredQuality = searchParams.get('required_quality') || 'HIGH'
 
   if (!latitude || !longitude) {
     return NextResponse.json(
