@@ -5,15 +5,6 @@ export const MALTA_CONFIG = {
   PEAK_SUN_HOURS: 5.2, // hours per day average
   ANNUAL_SUNSHINE_HOURS: 3000, // hours per year
 
-  // Feed-in tariffs (EUR per kWh)
-  GRANT_TARIFF: 0.105, // With government grant
-  NO_GRANT_TARIFF: 0.15, // Without grant
-  TARIFF_GUARANTEE_YEARS: 20, // Years guaranteed
-
-  // Grant configuration (2025 Malta scheme)
-  MAX_GRANT_AMOUNT: 2500, // EUR (50% of costs up to €2,500)
-  GRANT_PERCENTAGE: 0.5, // 50% of installation cost
-
   // System specifications
   PANEL_WATTAGE: 400, // Watts per panel
   PANEL_WIDTH: 1.0, // meters
@@ -53,6 +44,103 @@ export const MALTA_CONFIG = {
   // Environmental factors
   CO2_OFFSET_FACTOR: 0.4, // kg CO2 per kWh
   TREE_EQUIVALENT: 25, // kg CO2 per tree per year
+}
+
+// Feed-in Tariffs (2025 Scheme) - 20 Year Guarantee
+// Source: https://www.powersolutions.com.mt/solar-panels-malta-government-schemes/
+export const FEED_IN_TARIFFS = {
+  WITH_GRANT: 0.105, // EUR/kWh - Lower tariff when receiving government grant
+  WITHOUT_GRANT: 0.15, // EUR/kWh - Higher tariff (43% more) when no grant received
+  GUARANTEE_YEARS: 20, // Years guaranteed by government
+}
+
+// Government Grant Configuration (2025 Renewable Energy Scheme)
+// Sources:
+// - https://www.virtuesolaris.com/government-grants/
+// - https://www.powersolutions.com.mt/2025-solar-panel-government-grants/
+// - https://gozo.news/116118/e10-million-in-renewable-energy-grants-additional-benefit-for-gozo-households/
+export const GRANT_CONFIG = {
+  MALTA: {
+    // Solar PV with Standard Inverter
+    SOLAR_STANDARD_INVERTER: {
+      percentage: 0.5, // 50% of eligible costs
+      maxAmount: 2500, // EUR maximum grant
+      perKWp: 625, // EUR per kWp installed
+      description: 'PV system with standard inverter',
+    },
+
+    // Solar PV with Hybrid Inverter (battery-ready)
+    SOLAR_HYBRID_INVERTER: {
+      percentage: 0.5, // 50% of eligible costs
+      maxAmount: 3000, // EUR maximum grant (€500 more than standard)
+      perKWp: 750, // EUR per kWp installed
+      description: 'PV system with hybrid inverter',
+    },
+
+    // Battery Storage System
+    BATTERY: {
+      percentage: 0.8, // 80% of eligible costs
+      maxAmount: 7200, // EUR maximum grant
+      perKWh: 720, // EUR per kWh capacity
+      description: 'Home battery storage system',
+    },
+
+    // Hybrid Inverter (when purchased with battery)
+    HYBRID_INVERTER_WITH_BATTERY: {
+      percentage: 0.8, // 80% of eligible costs
+      maxAmount: 1800, // EUR maximum grant
+      perKWp: 450, // EUR per kWp installed
+      description: 'Hybrid inverter costs when combined with battery',
+    },
+
+    // Maximum combined grant (PV + Battery + Hybrid Inverter)
+    MAX_COMBINED_GRANT: 10200, // EUR (€3,000 + €7,200 for hybrid PV + battery)
+  },
+
+  GOZO: {
+    // Solar PV with Standard Inverter (same as Malta)
+    SOLAR_STANDARD_INVERTER: {
+      percentage: 0.5,
+      maxAmount: 2500,
+      perKWp: 625,
+      description: 'PV system with standard inverter',
+    },
+
+    // Solar PV with Hybrid Inverter (same as Malta)
+    SOLAR_HYBRID_INVERTER: {
+      percentage: 0.5,
+      maxAmount: 3000,
+      perKWp: 750,
+      description: 'PV system with hybrid inverter',
+    },
+
+    // Battery Storage System - ENHANCED FOR GOZO (95% vs Malta's 80%)
+    BATTERY: {
+      percentage: 0.95, // 95% of eligible costs (GOZO ENHANCED BENEFIT)
+      maxAmount: 8550, // EUR maximum grant (€1,350 more than Malta)
+      perKWh: 855, // EUR per kWh capacity
+      description: 'Home battery storage system (Gozo enhanced rate)',
+    },
+
+    // Hybrid Inverter (when purchased with battery) - same as Malta
+    HYBRID_INVERTER_WITH_BATTERY: {
+      percentage: 0.8,
+      maxAmount: 1800,
+      perKWp: 450,
+      description: 'Hybrid inverter costs when combined with battery',
+    },
+
+    // Maximum combined grant (PV + Battery + Hybrid Inverter)
+    MAX_COMBINED_GRANT: 11550, // EUR (€3,000 + €8,550 for hybrid PV + battery)
+  },
+}
+
+// Grant scheme information
+export const GRANT_SCHEME_INFO = {
+  APPLICATION_PERIOD: 'February 26, 2025 - December 2025 (or until funds exhausted)',
+  TOTAL_BUDGET: 10300000, // EUR (€10.3 million)
+  ADMINISTERED_BY: 'Regulator for Energy and Water Services (REWS)',
+  GOZO_BENEFIT_REASON: 'Gozo operates entirely on clean energy at times; enhanced battery grants support further renewable adoption',
 }
 
 // Application configuration

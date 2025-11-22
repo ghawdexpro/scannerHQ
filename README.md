@@ -1,4 +1,4 @@
-# Solar Scan GE - Ghawdex Engineering Solar Analysis Platform
+# ScannerHQ - Ghawdex Engineering Solar Analysis Platform
 
 An AI-powered web application for instant solar system analysis and quotes for residential and commercial properties in Malta and Gozo. Built by Ghawdex Engineering to revolutionize solar installation sales with instant visual analysis and 3-hour quote turnaround.
 
@@ -27,8 +27,8 @@ An AI-powered web application for instant solar system analysis and quotes for r
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/ghawdexpro/solar-analisys-ghawdex.git
-cd solar-analisys-ghawdex
+git clone https://github.com/ghawdexpro/scannerHQ.git
+cd scannerHQ
 ```
 
 2. Install dependencies:
@@ -68,7 +68,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-solar-scan-ge/
+scannerHQ/
 ├── src/
 │   ├── app/                    # Next.js app directory
 │   │   ├── (public)/           # Public-facing pages

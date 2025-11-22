@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Sun, MapPin, Calculator, Clock, Shield, Zap } from 'lucide-react'
 import InteractiveMapInput from '@/components/address-input/InteractiveMapInput'
-import { MALTA_CONFIG, APP_CONFIG } from '@/config/constants'
+import { MALTA_CONFIG, APP_CONFIG, GRANT_CONFIG, FEED_IN_TARIFFS } from '@/config/constants'
 import { useAuth } from '@/context/AuthContext'
 import { trackAnalysisRequest } from '@/lib/analytics/tracking'
 import { useScrollTracking } from '@/hooks/useScrollTracking'
@@ -86,7 +86,7 @@ export default function Home() {
                   <span className="font-semibold text-sm sm:text-base text-white">Grant Calculator</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-400 ml-9">
-                  Up to €{MALTA_CONFIG.MAX_GRANT_AMOUNT} government grant
+                  Up to €{GRANT_CONFIG.GOZO.MAX_COMBINED_GRANT.toLocaleString()} government grant (Gozo)
                 </p>
               </div>
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6 shadow-lg hover:shadow-amber-500/20 hover:border-amber-500/50 transition-all">
@@ -104,7 +104,7 @@ export default function Home() {
                   <span className="font-semibold text-sm sm:text-base text-white">Feed-in Tariff</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-400 ml-9">
-                  {MALTA_CONFIG.TARIFF_GUARANTEE_YEARS} years guaranteed rates
+                  {FEED_IN_TARIFFS.GUARANTEE_YEARS} years guaranteed rates
                 </p>
               </div>
             </motion.div>
@@ -183,11 +183,11 @@ export default function Home() {
                 <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3 flex-shrink-0"></span>
-                    <strong>With Grant:</strong> <span className="ml-2">{MALTA_CONFIG.GRANT_TARIFF}€/kWh for 20 years</span>
+                    <strong>With Grant:</strong> <span className="ml-2">€{FEED_IN_TARIFFS.WITH_GRANT}/kWh for {FEED_IN_TARIFFS.GUARANTEE_YEARS} years</span>
                   </li>
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3 flex-shrink-0"></span>
-                    <strong>Without Grant:</strong> <span className="ml-2">{MALTA_CONFIG.NO_GRANT_TARIFF}€/kWh for 20 years</span>
+                    <strong>Without Grant:</strong> <span className="ml-2">€{FEED_IN_TARIFFS.WITHOUT_GRANT}/kWh (43% higher!) for {FEED_IN_TARIFFS.GUARANTEE_YEARS} years</span>
                   </li>
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3 flex-shrink-0"></span>

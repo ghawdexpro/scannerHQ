@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Solar Scan GE is a Next.js 14 application providing instant solar system analysis and quotes for residential and commercial properties in Malta and Gozo. It uses a dual-analysis approach: Google Solar API for Malta and AI-based fallback for Gozo (where Google Solar coverage is limited). The application is fully optimized for mobile with PWA capabilities and responsive design.
+ScannerHQ is a Next.js 14 application providing instant solar system analysis and quotes for residential and commercial properties in Malta and Gozo. It uses a dual-analysis approach: Google Solar API for Malta and AI-based fallback for Gozo (where Google Solar coverage is limited). The application is fully optimized for mobile with PWA capabilities and responsive design.
 
 ## Development Commands
 
@@ -18,7 +18,7 @@ npm run start        # Start production server
 npm run lint         # Run ESLint + Prettier check (if configured)
 
 # Deployment (Railway CLI v4.8.0 available)
-railway up           # Deploy to production (app.ghawdex.pro)
+railway up           # Deploy to production
 railway status       # Check deployment status
 railway variables    # View/manage environment variables
 railway logs         # Stream production logs
@@ -29,7 +29,7 @@ gh issue list        # List issues
 gh repo view         # View repository info
 ```
 
-**Repository**: https://github.com/ghawdexpro/solar-analisys-ghawdex
+**Repository**: https://github.com/ghawdexpro/scannerHQ
 
 ## Architecture
 
@@ -54,15 +54,37 @@ The core architecture uses two analysis paths:
 
 All Malta solar calculations are centralized in `src/config/constants.ts`:
 
-- **Feed-in Tariffs**:
-  - 0.105 EUR/kWh (with government grant)
-  - 0.15 EUR/kWh (without grant)
+- **Feed-in Tariffs (2025 Scheme)**:
+  - €0.105/kWh (with government grant) - lower tariff but upfront discount
+  - €0.15/kWh (without grant) - 43% higher tariff, better for long-term ROI
   - 20-year guarantee period
+  - **Important**: Application calculates BOTH scenarios to help customers choose optimal path
 
-- **Government Grant**:
-  - Max €2400
-  - 30% of installation cost
-  - Affects tariff rate (lower with grant, higher without)
+- **Government Grants (2025 Renewable Energy Scheme)**:
+
+  **Malta:**
+  - Solar PV (standard inverter): 50% up to €2,500 (€625/kWp)
+  - Solar PV (hybrid inverter): 50% up to €3,000 (€750/kWp) - battery-ready
+  - Battery storage: 80% up to €7,200 (€720/kWh)
+  - Hybrid inverter (with battery): 80% up to €1,800 (€450/kWp)
+  - Maximum combined grant: €10,200
+
+  **Gozo (Enhanced Benefits):**
+  - Solar PV grants: Same as Malta
+  - Battery storage: **95% up to €8,550** (€855/kWh) - 15% more coverage
+  - Hybrid inverter: Same as Malta
+  - Maximum combined grant: €11,550
+  - **Gozo savings**: €1,350 more in battery grants vs Malta
+
+  **Grant Administration:**
+  - Applications: February 26, 2025 - December 2025 (or until funds exhausted)
+  - Total budget: €10.3 million
+  - Administered by: Regulator for Energy and Water Services (REWS)
+
+  **Sources:**
+  - [Virtue Solaris Government Grants](https://www.virtuesolaris.com/government-grants/)
+  - [Power Solutions Grant Schemes](https://www.powersolutions.com.mt/2025-solar-panel-government-grants/)
+  - [Gozo Enhanced Benefits](https://gozo.news/116118/e10-million-in-renewable-energy-grants-additional-benefit-for-gozo-households/)
 
 - **Location Bounds**:
   - `MALTA_BOUNDS` and `GOZO_BOUNDS` for geographic validation
@@ -79,15 +101,22 @@ All Malta solar calculations are centralized in `src/config/constants.ts`:
 20-year ROI projections are calculated in `src/lib/google/solar-service.ts`:
 
 ```typescript
-calculateFinancials(systemSize, yearlyGeneration, withGrant)
+calculateFinancials(systemSize, yearlyGeneration, withGrant, lat, lng, options)
 ```
 
 Key aspects:
-- Installation cost: €1500/kW
-- Panel degradation: 0.5%/year compound
-- Two scenarios calculated simultaneously (with/without grant)
-- ROI calculation finds breakeven year
-- Returns full 20-year projection array
+- **Regional Detection**: Automatically detects Malta vs Gozo for correct grant calculation
+- **Installation cost**: €1,500/kW solar + €900/kWh battery
+- **Grant Calculation**:
+  - Supports standard vs hybrid inverter (€500 difference)
+  - Supports battery storage grants (80% Malta, 95% Gozo)
+  - Returns detailed grant breakdown by component
+  - Caps at maximum combined grant (€10,200 Malta, €11,550 Gozo)
+- **Feed-in Tariff**: €0.105/kWh (with grant) vs €0.15/kWh (without grant)
+- **Panel degradation**: 0.5%/year compound
+- **Two scenarios calculated**: Application ALWAYS shows both with-grant and without-grant options
+- **ROI calculation**: Finds breakeven year for each scenario
+- **Returns**: Full 20-year projection array + grant breakdown + region info
 
 ### Database Schema
 
@@ -302,7 +331,6 @@ Add Vitest or Jest when scaling. Currently relying on TypeScript strict mode.
 - **Address**: Xewkija Industrial Zone, Malta
 - **Website**: https://www.ghawdex.pro
 - **Email**: admin@ghawdex.pro
-- **Production App**: https://app.ghawdex.pro
 
 **Configuration Location**: All company-specific settings are in `src/config/constants.ts`:
 - Company name, phone, address, website
@@ -401,7 +429,7 @@ const supabase = createClient(url, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 ## Directory Structure
 
 ```
-solar-scan-ge/
+scannerHQ/
 ├── src/
 │   ├── app/
 │   │   ├── (public)/ - Public pages
@@ -471,9 +499,9 @@ Manual types in `database.ts` should mirror generated types for easier editing.
 
 ## Deployment
 
-### Railway (Production: app.ghawdex.pro)
+### Railway
 
-The project deploys to Railway.app with the custom domain **app.ghawdex.pro**.
+The project deploys to Railway.app.
 
 ```bash
 railway up                    # Deploy to production
@@ -482,7 +510,9 @@ railway variables            # View/edit environment variables
 railway logs                 # Stream production logs
 ```
 
-**Production URL**: https://app.ghawdex.pro
+**Railway Project**: scannerHQ
+**Railway Service**: scannerHQ
+**Production URL**: https://scannerhq-production.up.railway.app
 
 ### Build Process
 

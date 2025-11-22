@@ -1,6 +1,6 @@
-# Mobile Optimization Guide - Solar Scan GE
+# Mobile Optimization Guide - ScannerHQ
 
-This document outlines all the mobile optimizations implemented for the Solar Scan GE project.
+This document outlines all the mobile optimizations implemented for the ScannerHQ project.
 
 ## Summary
 

@@ -1,6 +1,6 @@
 {
-  "name": "Solar Scan GE - Solar Analysis for Malta & Gozo",
-  "short_name": "Solar Scan",
+  "name": "ScannerHQ - Solar Analysis for Malta & Gozo",
+  "short_name": "ScannerHQ",
   "description": "Instant solar system analysis, government grant calculations, and professional quotes for residential and commercial properties in Malta and Gozo",
   "start_url": "/",
   "scope": "/",

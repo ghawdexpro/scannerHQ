@@ -1,5 +1,5 @@
 -- ============================================
--- SOLAR SCAN GE - DATABASE SETUP
+-- SCANNERHQ - DATABASE SETUP
 -- Run this in your Supabase SQL Editor
 -- ============================================
 

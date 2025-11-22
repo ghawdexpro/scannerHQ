@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This guide provides step-by-step instructions to port the **working Google Solar API layer animation** from the solarscan-2.0 app to Solar Scan GE.
+This guide provides step-by-step instructions to port the **working Google Solar API layer animation** from the solarscan-2.0 app to ScannerHQ.
 
 **Current Problem:**
 - GeoTIFF files not loading (404 errors, CORS issues, authentication failures)
@@ -62,7 +62,7 @@ User Browser                    Next.js Server                  Google Solar API
 
 **Action:**
 ```bash
-cd "/Users/maciejpopiel/Solar Scan GE/solar-scan-ge"
+cd "/Users/maciejpopiel/Solar Scan GE/scannerHQ"
 npm install geotiff geotiff-geokeys-to-proj4 proj4
 ```
 

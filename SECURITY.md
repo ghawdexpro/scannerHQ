@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the security measures, best practices, and procedures for the Solar Scan GE application.
+This document outlines the security measures, best practices, and procedures for the ScannerHQ application.
 
 ## Reporting Security Vulnerabilities
 
@@ -143,7 +143,7 @@ if (!result.valid) {
 
 **Google Maps API Key:**
 - Enable HTTP referrer restrictions in Google Cloud Console
-- Restrict to your domain: `ghawdex.pro/*`, `app.ghawdex.pro`
+- Restrict to your domain: `ghawdex.pro/*`, `scannerhq-production.up.railway.app`
 - Enable only required APIs (Maps JavaScript, Geocoding, Solar, Static Maps)
 - Set quota limits to prevent bill shock
 

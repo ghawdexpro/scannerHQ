@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { MALTA_CONFIG, GRANT_CONFIG, FEED_IN_TARIFFS } from '@/config/constants'
+import { getLocationType } from '@/lib/utils/location'
 
 // Google Solar API base URL
 const SOLAR_API_BASE = 'https://solar.googleapis.com/v1'
@@ -151,11 +153,15 @@ export const getBuildingInsights = async (
 }
 
 // Calculate solar panel configuration for Malta
-export const calculateSolarConfiguration = (solarPotential: SolarPotential) => {
+export const calculateSolarConfiguration = (
+  solarPotential: SolarPotential,
+  lat: number,
+  lng: number
+) => {
   // Use Malta-specific parameters
-  const MALTA_SOLAR_IRRADIANCE = 5.2 // kWh/m²/day
-  const SYSTEM_EFFICIENCY = 0.80 // 80% efficiency
-  const PANEL_WATTAGE = 400 // Standard panel wattage
+  const MALTA_SOLAR_IRRADIANCE = MALTA_CONFIG.SOLAR_IRRADIANCE
+  const SYSTEM_EFFICIENCY = MALTA_CONFIG.SYSTEM_EFFICIENCY
+  const PANEL_WATTAGE = MALTA_CONFIG.PANEL_WATTAGE
 
   // Get the best configuration (usually the last one with max panels)
   const bestConfig = solarPotential.solarPanelConfigs[
@@ -176,9 +182,9 @@ export const calculateSolarConfiguration = (solarPotential: SolarPotential) => {
   const generationRatio = systemSize / calculatedSystemSize
   const yearlyGeneration = bestConfig.yearlyEnergyDcKwh * SYSTEM_EFFICIENCY * generationRatio
 
-  // Calculate financial metrics
-  const withGrant = calculateFinancials(systemSize, yearlyGeneration, true)
-  const withoutGrant = calculateFinancials(systemSize, yearlyGeneration, false)
+  // Calculate financial metrics for both grant scenarios
+  const withGrant = calculateFinancials(systemSize, yearlyGeneration, true, lat, lng)
+  const withoutGrant = calculateFinancials(systemSize, yearlyGeneration, false, lat, lng)
 
   return {
     panelsCount,
@@ -197,22 +203,91 @@ export const calculateSolarConfiguration = (solarPotential: SolarPotential) => {
   }
 }
 
-// Calculate financial metrics for Malta
+// Calculate financial metrics for Malta/Gozo with 2025 grant scheme
 export const calculateFinancials = (
   systemSize: number,
   yearlyGeneration: number,
-  withGrant: boolean
+  withGrant: boolean,
+  lat: number,
+  lng: number,
+  options: {
+    inverterType?: 'standard' | 'hybrid'
+    batteryCapacityKWh?: number
+  } = {}
 ) => {
-  const INSTALLATION_COST_PER_KW = 1500 // EUR per kW (estimated)
-  const MALTA_GRANT_MAX = 2500 // EUR (2025 scheme)
-  const GRANT_PERCENTAGE = 0.5 // 50% of installation cost
-  const FEED_IN_TARIFF = withGrant ? 0.105 : 0.15 // EUR per kWh
-  const PANEL_DEGRADATION = 0.005 // 0.5% per year
-  const YEARS = 20
+  const { inverterType = 'hybrid', batteryCapacityKWh = 0 } = options
 
+  // Detect region for grant calculation
+  const region = getLocationType(lat, lng)
+  const isGozo = region === 'gozo'
+  const grantConfig = isGozo ? GRANT_CONFIG.GOZO : GRANT_CONFIG.MALTA
+
+  // System costs
+  const INSTALLATION_COST_PER_KW = MALTA_CONFIG.COST_PER_KW
+  const BATTERY_COST_PER_KWH = 900 // EUR per kWh (typical lithium battery cost)
   const installationCost = systemSize * INSTALLATION_COST_PER_KW
-  const grantAmount = withGrant ? Math.min(installationCost * GRANT_PERCENTAGE, MALTA_GRANT_MAX) : 0
-  const upfrontCost = installationCost - grantAmount
+  const batteryCost = batteryCapacityKWh * BATTERY_COST_PER_KWH
+  const totalSystemCost = installationCost + batteryCost
+
+  // Calculate grant amount (maximum possible grant)
+  let grantAmount = 0
+  let grantBreakdown = {
+    solar: 0,
+    battery: 0,
+    hybridInverter: 0,
+    total: 0,
+    region: isGozo ? 'Gozo' : 'Malta'
+  }
+
+  if (withGrant) {
+    // Solar PV grant (hybrid inverter gives €500 more)
+    const solarGrantConfig = inverterType === 'hybrid'
+      ? grantConfig.SOLAR_HYBRID_INVERTER
+      : grantConfig.SOLAR_STANDARD_INVERTER
+
+    const solarGrantByPercentage = installationCost * solarGrantConfig.percentage
+    const solarGrantByCapacity = systemSize * solarGrantConfig.perKWp
+    const solarGrant = Math.min(solarGrantByPercentage, solarGrantByCapacity, solarGrantConfig.maxAmount)
+    grantBreakdown.solar = solarGrant
+
+    // Battery storage grant (if battery is included)
+    if (batteryCapacityKWh > 0) {
+      const batteryGrantByPercentage = batteryCost * grantConfig.BATTERY.percentage
+      const batteryGrantByCapacity = batteryCapacityKWh * grantConfig.BATTERY.perKWh
+      const batteryGrant = Math.min(batteryGrantByPercentage, batteryGrantByCapacity, grantConfig.BATTERY.maxAmount)
+      grantBreakdown.battery = batteryGrant
+
+      // Hybrid inverter grant (only when battery is installed)
+      if (inverterType === 'hybrid') {
+        const HYBRID_INVERTER_COST_ESTIMATE = systemSize * 450 // EUR (rough estimate)
+        const hybridInverterGrantByPercentage = HYBRID_INVERTER_COST_ESTIMATE * grantConfig.HYBRID_INVERTER_WITH_BATTERY.percentage
+        const hybridInverterGrantByCapacity = systemSize * grantConfig.HYBRID_INVERTER_WITH_BATTERY.perKWp
+        const hybridInverterGrant = Math.min(
+          hybridInverterGrantByPercentage,
+          hybridInverterGrantByCapacity,
+          grantConfig.HYBRID_INVERTER_WITH_BATTERY.maxAmount
+        )
+        grantBreakdown.hybridInverter = hybridInverterGrant
+      }
+    }
+
+    grantAmount = grantBreakdown.solar + grantBreakdown.battery + grantBreakdown.hybridInverter
+    grantBreakdown.total = grantAmount
+
+    // Cap at maximum combined grant
+    if (grantAmount > grantConfig.MAX_COMBINED_GRANT) {
+      grantAmount = grantConfig.MAX_COMBINED_GRANT
+      grantBreakdown.total = grantAmount
+    }
+  }
+
+  // Feed-in tariff based on grant decision
+  const feedInTariff = withGrant ? FEED_IN_TARIFFS.WITH_GRANT : FEED_IN_TARIFFS.WITHOUT_GRANT
+
+  // Calculate ROI with 20-year projection
+  const upfrontCost = totalSystemCost - grantAmount
+  const YEARS = FEED_IN_TARIFFS.GUARANTEE_YEARS
+  const PANEL_DEGRADATION = MALTA_CONFIG.PANEL_DEGRADATION_RATE
 
   let totalSavings = -upfrontCost
   let roiYear = 0
@@ -221,7 +296,7 @@ export const calculateFinancials = (
   for (let year = 1; year <= YEARS; year++) {
     const degradation = Math.pow(1 - PANEL_DEGRADATION, year - 1)
     const yearGeneration = yearlyGeneration * degradation
-    const yearRevenue = yearGeneration * FEED_IN_TARIFF
+    const yearRevenue = yearGeneration * feedInTariff
 
     totalSavings += yearRevenue
 
@@ -240,14 +315,18 @@ export const calculateFinancials = (
 
   return {
     installationCost,
+    batteryCost,
+    totalSystemCost,
     grantAmount,
+    grantBreakdown,
     upfrontCost,
-    feedInTariff: FEED_IN_TARIFF,
-    yearlyRevenue: yearlyGeneration * FEED_IN_TARIFF,
+    feedInTariff,
+    yearlyRevenue: yearlyGeneration * feedInTariff,
     roiYears: roiYear || YEARS + 1,
     twentyYearSavings: totalSavings + upfrontCost,
     totalReturn: totalSavings,
-    projections
+    projections,
+    region: isGozo ? 'Gozo' : 'Malta'
   }
 }
 

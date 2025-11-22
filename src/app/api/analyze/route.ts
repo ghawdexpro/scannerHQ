@@ -71,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
 
       try {
         const buildingInsights = await getBuildingInsights(lat, lng, 'HIGH')
-        solarAnalysis = calculateSolarConfiguration(buildingInsights.solarPotential)
+        solarAnalysis = calculateSolarConfiguration(buildingInsights.solarPotential, lat, lng)
         imageryQuality = buildingInsights.imageryQuality
 
         if (!solarAnalysis) {
@@ -99,12 +99,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
             const withGrant = calculateFinancials(
               aiPotential.systemSize,
               aiPotential.yearlyGeneration,
-              true
+              true,
+              lat,
+              lng
             )
             const withoutGrant = calculateFinancials(
               aiPotential.systemSize,
               aiPotential.yearlyGeneration,
-              false
+              false,
+              lat,
+              lng
             )
 
             solarAnalysis = {
